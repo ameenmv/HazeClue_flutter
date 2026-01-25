@@ -8,7 +8,7 @@ It also includes a website for analyzing the quality of educational content and 
 
 ## 🧩 Overview
 
-The human brain works as a black box processing millions of operations every moment.
+The human brain works as a black box processing millions of operations every moment. 
 HazeClue opens a window into this box through an integrated system combining:
 
 * Real-time brainwave reading and analysis via the Neuro PlayGround Lite (NPG Lite) device.
