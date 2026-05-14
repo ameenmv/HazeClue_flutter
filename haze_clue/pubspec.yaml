@@ -1,0 +1,40 @@
+name: haze_clue
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.7
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  http: ^1.2.0
+  shared_preferences: ^2.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_native_splash: ^2.4.3
+  flutter_lints: ^6.0.0
+
+flutter_native_splash:
+  android: true
+  ios: true
+  color: "#FFFFFF"
+  image: assets/images/hazecluelogo.jpeg
+
+  android_12:
+    color: "#FFFFFF"
+    image: assets/images/hazecluelogo.jpeg
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/Intro.png
+    - assets/images/Intro1.png
+    - assets/images/Intro2.png
+    - assets/images/hazecluelogo.jpeg
