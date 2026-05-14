@@ -1,0 +1,205 @@
+import 'package:flutter/material.dart';
+import 'main.dart';
+import 'shared_widgets.dart';
+
+class EditProfileScreen extends StatefulWidget {
+  const EditProfileScreen({super.key});
+
+  @override
+  State<EditProfileScreen> createState() => _EditProfileScreenState();
+}
+
+class _EditProfileScreenState extends State<EditProfileScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          "Edit profile",
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          children: [
+            _buildProfileTextField(
+              label: "Full name",
+              initialValue: "Puerto Rico",
+            ),
+            const SizedBox(height: 16),
+            _buildProfileTextField(
+              label: "Nick name",
+              initialValue: "puerto_rico",
+            ),
+            const SizedBox(height: 16),
+            _buildProfileTextField(
+              label: "Email", // Changing from 'Label' in Figma to 'Email' for logic
+              initialValue: "youremail@domain.com",
+            ),
+            const SizedBox(height: 16),
+            _buildProfileTextField(
+              label: "Phone number",
+              initialValue: "123-456-7890",
+              prefixIcon: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.network(
+                      'https://flagcdn.com/w40/us.png', // Temporary flag image
+                      width: 24,
+                      height: 16,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.flag, size: 24),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildProfileDropdown(
+                    label: "Country",
+                    value: "United States",
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildProfileTextField(
+                    label: "Gender", // Figma says "Genre", changing to Gender
+                    initialValue: "Female",
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildProfileTextField(
+              label: "Address",
+              initialValue: "45 New Avenue, New York",
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context); // Go back after saving
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: kPrimaryPurple,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  "SUBMIT",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileTextField({
+    required String label,
+    required String initialValue,
+    Widget? prefixIcon,
+  }) {
+    return TextFormField(
+      initialValue: initialValue,
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
+        color: kTextDark,
+      ),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(
+          color: kTextLightGrey,
+          fontSize: 14,
+        ),
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        filled: true,
+        fillColor: const Color(0xFFF8F9FA),
+        prefixIcon: prefixIcon,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: kPrimaryPurple),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileDropdown({
+    required String label,
+    required String value,
+  }) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(
+          color: kTextLightGrey,
+          fontSize: 14,
+        ),
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        filled: true,
+        fillColor: const Color(0xFFF8F9FA),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+      ),
+      items: ["United States", "Egypt", "UK", "Canada"]
+          .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+          .toList(),
+      onChanged: (val) {},
+    );
+  }
+}

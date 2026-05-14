@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'main.dart';
+import 'my_devices_screen.dart';
+import 'concentration_puzzle_screen.dart';
+import 'notification_inbox_screen.dart';
 
 class DashboardContent extends StatelessWidget {
   const DashboardContent({super.key});
@@ -35,7 +38,14 @@ class DashboardContent extends StatelessWidget {
               color: kTextDark,
               size: 28,
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const NotificationInboxScreen(),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -56,7 +66,7 @@ class DashboardContent extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _buildQuickActions(),
+            _buildQuickActions(context),
             const SizedBox(height: 32),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -161,15 +171,32 @@ class DashboardContent extends StatelessWidget {
   }
 
   // Use this for the 3-column action row
-  Widget _buildQuickActions() {
+  Widget _buildQuickActions(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _actionItem(Icons.bolt, "Connect\nDevices", const Color(0xFFF0EFFF)),
+        _actionItem(
+          Icons.bolt,
+          "Connect\nDevices",
+          const Color(0xFFF0EFFF),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const MyDevicesScreen()),
+            );
+          },
+        ),
         _actionItem(
           Icons.psychology_outlined,
           "Training\nExercises",
           const Color(0xFFFFF0F0),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const ConcentrationPuzzleScreen()),
+            );
+          },
         ),
         _actionItem(
           Icons.music_note_outlined,
@@ -180,29 +207,33 @@ class DashboardContent extends StatelessWidget {
     );
   }
 
-  Widget _actionItem(IconData icon, String label, Color bgColor) {
-    return Column(
-      children: [
-        Container(
-          height: 70,
-          width: 70,
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(20),
+  Widget _actionItem(IconData icon, String label, Color bgColor,
+      {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            height: 70,
+            width: 70,
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Icon(icon, color: kPrimaryPurple, size: 30),
           ),
-          child: Icon(icon, color: kPrimaryPurple, size: 30),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: kTextDark,
+          const SizedBox(height: 12),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: kTextDark,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

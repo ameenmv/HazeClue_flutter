@@ -73,12 +73,16 @@ class InsightsScreen extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         // Placeholder for the line chart
-        SizedBox(
+        Container(
           height: 150,
           width: double.infinity,
-          child: Image.asset(
-            'assets/weekly_graph.png',
-          ), // Use fl_chart here in a real app
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Center(
+            child: Icon(Icons.show_chart, size: 50, color: Colors.grey),
+          ),
         ),
       ],
     );
@@ -87,11 +91,15 @@ class InsightsScreen extends StatelessWidget {
   Widget _buildMonthlyGraph() {
     return Container(
       height: 200,
+      width: double.infinity,
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade100),
+        color: Colors.grey.shade100,
+        border: Border.all(color: Colors.grey.shade300),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Image.asset('assets/monthly_grid_graph.png'),
+      child: const Center(
+        child: Icon(Icons.bar_chart, size: 50, color: Colors.grey),
+      ),
     );
   }
 }

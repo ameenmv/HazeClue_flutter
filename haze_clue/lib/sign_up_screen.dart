@@ -47,11 +47,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     setState(() => _isLoading = true);
     try {
+      // Mock API Call
+      await Future.delayed(const Duration(seconds: 1));
+      /*
       await ApiService.register(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      */
       if (!mounted) return;
       Navigator.pushReplacement(
         context,

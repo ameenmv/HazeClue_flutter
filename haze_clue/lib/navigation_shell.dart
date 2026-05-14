@@ -3,6 +3,8 @@ import 'main.dart';
 import 'dashboard_screen.dart';
 import 'insights_screen.dart';
 import 'training_screen.dart';
+import 'profile_screen.dart';
+import 'sessions_screen.dart';
 
 class MainNavigationShell extends StatefulWidget {
   const MainNavigationShell({super.key});
@@ -19,8 +21,8 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     const DashboardContent(), // Your original Dashboard UI
     const InsightsScreen(), // The Insights page
     const TrainingScreen(), // The Training page
-    const Center(child: Text("Sessions Page")),
-    const Center(child: Text("Profile Page")),
+    const SessionsScreen(), // The Sessions page
+    const ProfileScreen(),
   ];
 
   @override
