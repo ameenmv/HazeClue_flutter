@@ -13,6 +13,12 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _nicknameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _countryController = TextEditingController();
+  final TextEditingController _genderController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
   bool _isLoading = true;
 
   @override
@@ -25,6 +31,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       final profile = await ApiService.getProfile();
       _nameController.text = profile['fullName'] ?? '';
+      _emailController.text = profile['email'] ?? '';
+      // Other fields are not currently returned by backend, so leave empty or null
+      _nicknameController.text = '';
+      _phoneController.text = '';
+      _countryController.text = '';
+      _genderController.text = '';
+      _addressController.text = '';
     } catch (e) {
       debugPrint("Error loading profile: $e");
     } finally {
@@ -74,17 +87,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             const SizedBox(height: 16),
             _buildProfileTextField(
               label: "Nick name",
-              initialValue: "puerto_rico",
+              controller: _nicknameController,
             ),
             const SizedBox(height: 16),
             _buildProfileTextField(
-              label: "Email", // Changing from 'Label' in Figma to 'Email' for logic
-              initialValue: "youremail@domain.com",
+              label: "Email",
+              controller: _emailController,
             ),
             const SizedBox(height: 16),
             _buildProfileTextField(
               label: "Phone number",
-              initialValue: "123-456-7890",
+              controller: _phoneController,
               prefixIcon: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Row(
@@ -106,16 +119,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             Row(
               children: [
                 Expanded(
-                  child: _buildProfileDropdown(
+                  child: _buildProfileTextField( // Using text field temporarily for country
                     label: "Country",
-                    value: "United States",
+                    controller: _countryController,
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: _buildProfileTextField(
-                    label: "Gender", // Figma says "Genre", changing to Gender
-                    initialValue: "Female",
+                    label: "Gender",
+                    controller: _genderController,
                   ),
                 ),
               ],
@@ -123,7 +136,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             const SizedBox(height: 16),
             _buildProfileTextField(
               label: "Address",
-              initialValue: "45 New Avenue, New York",
+              controller: _addressController,
             ),
             const SizedBox(height: 32),
             SizedBox(
