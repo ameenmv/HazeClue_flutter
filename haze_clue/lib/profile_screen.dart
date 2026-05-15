@@ -10,8 +10,34 @@ import 'contact_us_screen.dart';
 import 'account_security_screen.dart';
 import 'privacy_policy_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+import 'api_service.dart';
+
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  Map<String, dynamic>? _profile;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final profile = await ApiService.getProfile();
+      setState(() {
+        _profile = profile;
+      });
+    } catch (e) {
+      debugPrint("Error loading profile: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -127,19 +153,19 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // --- User Info ---
-                const Text(
-                  "Puerto Rico",
-                  style: TextStyle(
+                Text(
+                  _profile?['fullName'] ?? "Loading...",
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: kTextDark,
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  "youremail@domain.com |\n+01 234 567 89",
+                Text(
+                  _profile?['email'] ?? "loading@example.com",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     color: kTextDark, // Dark text in the design
                     height: 1.4,

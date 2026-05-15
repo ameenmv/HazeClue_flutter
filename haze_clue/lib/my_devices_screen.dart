@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'main.dart'; // For colors
 
+import 'api_service.dart';
+
 class MyDevicesScreen extends StatefulWidget {
   const MyDevicesScreen({super.key});
 
@@ -11,6 +13,43 @@ class MyDevicesScreen extends StatefulWidget {
 class _MyDevicesScreenState extends State<MyDevicesScreen> {
   int _selectedCategory = 0;
   final List<String> _categories = ["All", "EEG", "Smartwatch", "tDCS"];
+  late Future<List<dynamic>> _devicesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDevices();
+  }
+
+  void _loadDevices() {
+    setState(() {
+      _devicesFuture = ApiService.getDevices();
+    });
+  }
+
+  Future<void> _connectDevice(String name, String mac) async {
+    try {
+      await ApiService.addDevice(name, mac);
+      _loadDevices();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+      );
+    }
+  }
+
+  Future<void> _removeDevice(String id) async {
+    try {
+      await ApiService.deleteDevice(id);
+      _loadDevices();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +125,6 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
             ),
             const SizedBox(height: 32),
 
-            // --- Connected Devices ---
             const Text(
               "Connected Devices",
               style: TextStyle(
@@ -96,20 +134,33 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            _buildConnectedDeviceItem(
-              icon: Icons.psychology_outlined,
-              name: "HazeFlow EEG",
-              model: "Model X-Pro",
-              battery: "ca. 85%",
-              signal: "excellent",
-            ),
-            const SizedBox(height: 16),
-            _buildConnectedDeviceItem(
-              icon: Icons.watch_outlined,
-              name: "NeuroSense Watch",
-              model: "Series 5",
-              battery: "ca. 58%",
-              signal: "good",
+            FutureBuilder<List<dynamic>>(
+              future: _devicesFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text("Error loading devices"));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Text("No devices connected.");
+                }
+                final devices = snapshot.data!;
+                return Column(
+                  children: devices.map((d) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: _buildConnectedDeviceItem(
+                        id: d['id'],
+                        icon: Icons.psychology_outlined,
+                        name: d['name'] ?? "Unknown Device",
+                        model: d['macAddress'] ?? "Unknown MAC",
+                        battery: "ca. 85%", // mock
+                        signal: "good", // mock
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
             ),
             const SizedBox(height: 32),
 
@@ -155,6 +206,7 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
   }
 
   Widget _buildConnectedDeviceItem({
+    required String id,
     required IconData icon,
     required String name,
     required String model,
@@ -232,8 +284,10 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
           ),
           const Icon(Icons.settings_outlined, color: Colors.black87, size: 20),
           const SizedBox(width: 12),
-          const Icon(Icons.remove_red_eye_outlined,
-              color: Colors.black87, size: 20),
+          GestureDetector(
+            onTap: () => _removeDevice(id),
+            child: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+          ),
         ],
       ),
     );
@@ -291,7 +345,10 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
           ),
         ),
         ElevatedButton(
-          onPressed: () {},
+          onPressed: () {
+            // Generating a random MAC address for demo purposes
+            _connectDevice(name, "00:1B:44:11:3A:B${DateTime.now().millisecond % 10}");
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: kPrimaryPurple,
             shape: RoundedRectangleBorder(

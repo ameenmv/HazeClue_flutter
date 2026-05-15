@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'dart:async';
+import 'dart:math';
 import 'main.dart'; // For colors
 
 class ConcentrationPuzzleScreen extends StatefulWidget {
@@ -12,6 +14,111 @@ class ConcentrationPuzzleScreen extends StatefulWidget {
 
 class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
   bool _binauralBeatsEnabled = true;
+
+  // Game State
+  bool _isPlaying = false;
+  int _score = 0;
+  int _timeLeft = 30;
+  int _combo = 0;
+  int _activeTargetIndex = -1;
+  int _correctTaps = 0;
+  int _totalTaps = 0;
+
+  Timer? _gameTimer;
+  Timer? _targetTimer;
+  final Random _random = Random();
+
+  @override
+  void dispose() {
+    _gameTimer?.cancel();
+    _targetTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startGame() {
+    setState(() {
+      _isPlaying = true;
+      _score = 0;
+      _timeLeft = 30;
+      _combo = 0;
+      _correctTaps = 0;
+      _totalTaps = 0;
+      _moveTarget();
+    });
+
+    _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        if (_timeLeft > 0) {
+          _timeLeft--;
+        } else {
+          _endGame();
+        }
+      });
+    });
+  }
+
+  void _endGame() {
+    _gameTimer?.cancel();
+    _targetTimer?.cancel();
+    setState(() {
+      _isPlaying = false;
+      _activeTargetIndex = -1;
+    });
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: const Text("Time's Up!"),
+        content: Text("Your Focus Score is $_score\nAccuracy: ${(_accuracy * 100).toInt()}%"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+            },
+            child: const Text("OK", style: TextStyle(color: kPrimaryPurple)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _moveTarget() {
+    _targetTimer?.cancel();
+    setState(() {
+      _activeTargetIndex = _random.nextInt(9);
+    });
+    // Target moves on its own if not tapped quickly enough
+    _targetTimer = Timer(const Duration(milliseconds: 1200), () {
+      if (_isPlaying) {
+        setState(() {
+          _combo = 0; // Missed target
+        });
+        _moveTarget();
+      }
+    });
+  }
+
+  void _onGridTapped(int index) {
+    if (!_isPlaying) return;
+
+    setState(() {
+      _totalTaps++;
+      if (index == _activeTargetIndex) {
+        // Hit
+        _correctTaps++;
+        _combo++;
+        _score += 10 * _combo;
+        _moveTarget();
+      } else {
+        // Miss
+        _combo = 0;
+      }
+    });
+  }
+
+  double get _accuracy => _totalTaps == 0 ? 1.0 : _correctTaps / _totalTaps;
+
 
   @override
   Widget build(BuildContext context) {
@@ -62,17 +169,17 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             "Focus Score",
                             style: TextStyle(
-                              color: Colors.grey.shade400,
+                              color: Colors.grey,
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
                           ),
-                          const Text(
-                            "785",
-                            style: TextStyle(
+                          Text(
+                            "$_score",
+                            style: const TextStyle(
                               color: kPrimaryPurple,
                               fontWeight: FontWeight.bold,
                               fontSize: 28,
@@ -83,18 +190,18 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(
+                          const Text(
                             "Time Left",
                             style: TextStyle(
-                              color: Colors.grey.shade400,
+                              color: Colors.grey,
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
                           ),
-                          const Text(
-                            "03:45",
+                          Text(
+                            "00:${_timeLeft.toString().padLeft(2, '0')}",
                             style: TextStyle(
-                              color: kPrimaryPurple,
+                              color: _timeLeft <= 5 ? Colors.red : kPrimaryPurple,
                               fontWeight: FontWeight.bold,
                               fontSize: 28,
                             ),
@@ -115,35 +222,33 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                         physics: const NeverScrollableScrollPhysics(),
                         mainAxisSpacing: 12,
                         crossAxisSpacing: 12,
-                        children: [
-                          _buildGridItem("1", isDark: false),
-                          _buildGridItem("2", isDark: true),
-                          _buildGridItem("3", isDark: false),
-                          _buildGridItem("4", isDark: true),
-                          _buildGridItem("5", isDark: false),
-                          _buildGridItem("6", isDark: true),
-                          _buildGridItem("7", isDark: false),
-                          _buildGridItem("8", isDark: true),
-                          _buildGridItem("9", isDark: false),
-                        ],
+                        children: List.generate(9, (index) {
+                          return GestureDetector(
+                            onTap: () => _onGridTapped(index),
+                            child: _buildGridItem("${index + 1}", 
+                                isDark: index % 2 != 0, 
+                                isActive: index == _activeTargetIndex),
+                          );
+                        }),
                       ),
                       // Floating target icon decoration
-                      Positioned(
-                        bottom: -10,
-                        right: -10,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: kPrimaryPurple,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.adjust,
-                            color: Colors.white,
-                            size: 24,
+                      if (!_isPlaying)
+                        Positioned(
+                          bottom: -10,
+                          right: -10,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(
+                              color: kPrimaryPurple,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.adjust,
+                              color: Colors.white,
+                              size: 24,
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ],
@@ -162,9 +267,9 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                       style: TextStyle(color: kTextLightGrey, fontSize: 14),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      "12x",
-                      style: TextStyle(
+                    Text(
+                      "${_combo}x",
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                         color: kTextDark,
@@ -184,9 +289,9 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                       style: TextStyle(color: kTextLightGrey, fontSize: 14),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      "92%",
-                      style: TextStyle(
+                    Text(
+                      "${(_accuracy * 100).toInt()}%",
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                         color: kTextDark,
@@ -272,19 +377,46 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                 ],
               ),
             ),
+            ),
+            const SizedBox(height: 24),
+            
+            // --- Play Button ---
+            if (!_isPlaying)
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton.icon(
+                  onPressed: _startGame,
+                  icon: const Icon(Icons.play_arrow, color: Colors.white),
+                  label: const Text(
+                    "Start Game",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kPrimaryPurple,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildGridItem(String number, {required bool isDark}) {
-    // Alternating shades of purple similar to the design
-    Color bgColor = isDark
-        ? kPrimaryPurple.withOpacity(0.5) // Lighter shade
-        : kPrimaryPurple; // Normal shade
+  Widget _buildGridItem(String number, {required bool isDark, required bool isActive}) {
+    Color bgColor = isActive 
+        ? Colors.orangeAccent // Active target color
+        : (isDark ? kPrimaryPurple.withOpacity(0.5) : kPrimaryPurple);
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(12),

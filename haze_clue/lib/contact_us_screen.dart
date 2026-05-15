@@ -1,8 +1,34 @@
 import 'package:flutter/material.dart';
 import 'main.dart'; // For colors
+import 'api_service.dart';
 
-class ContactUsScreen extends StatelessWidget {
+class ContactUsScreen extends StatefulWidget {
   const ContactUsScreen({super.key});
+
+  @override
+  State<ContactUsScreen> createState() => _ContactUsScreenState();
+}
+
+class _ContactUsScreenState extends State<ContactUsScreen> {
+  final TextEditingController _subjectController = TextEditingController();
+  final TextEditingController _messageController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _submitTicket() async {
+    if (_subjectController.text.isEmpty || _messageController.text.isEmpty) return;
+    setState(() => _isLoading = true);
+    try {
+      await ApiService.submitSupportTicket(_subjectController.text, _messageController.text);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Message sent successfully!')));
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,12 +80,13 @@ class ContactUsScreen extends StatelessWidget {
                   _buildInputLabel("Name"),
                   _buildTextField(hint: "Your name"),
                   const SizedBox(height: 16),
-                  _buildInputLabel("Email"),
-                  _buildTextField(hint: "Your email address"),
+                  _buildInputLabel("Subject"),
+                  _buildTextField(hint: "Message Subject", controller: _subjectController),
                   const SizedBox(height: 16),
                   _buildInputLabel("Message"),
                   _buildTextField(
                     hint: "How can we help you today?",
+                    controller: _messageController,
                     maxLines: 4,
                   ),
                 ],
@@ -71,11 +98,8 @@ class ContactUsScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               height: 56,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Handle send message
-                  Navigator.pop(context);
-                },
+              child: _isLoading ? const Center(child: CircularProgressIndicator()) : ElevatedButton(
+                onPressed: _submitTicket,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kPrimaryPurple,
                   shape: RoundedRectangleBorder(
@@ -180,8 +204,9 @@ class ContactUsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField({required String hint, int maxLines = 1}) {
+  Widget _buildTextField({required String hint, TextEditingController? controller, int maxLines = 1}) {
     return TextField(
+      controller: controller,
       maxLines: maxLines,
       decoration: InputDecoration(
         hintText: hint,

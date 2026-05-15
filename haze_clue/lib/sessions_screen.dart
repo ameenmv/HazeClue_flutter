@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'main.dart'; // For colors
 
+import 'api_service.dart';
+
 class SessionsScreen extends StatefulWidget {
   const SessionsScreen({super.key});
 
@@ -12,6 +14,35 @@ class _SessionsScreenState extends State<SessionsScreen> {
   int _selectedDuration = 15;
   final List<int> _durations = [5, 10, 15, 20, 25, 30];
   bool _isPaused = false;
+  String? _sessionId;
+
+  @override
+  void initState() {
+    super.initState();
+    _startSession();
+  }
+
+  Future<void> _startSession() async {
+    try {
+      final res = await ApiService.createSession("Focus Session", _selectedDuration, null);
+      setState(() {
+        _sessionId = res['id'];
+      });
+    } catch (e) {
+      debugPrint('Failed to start session: $e');
+    }
+  }
+
+  Future<void> _endSession() async {
+    if (_sessionId != null) {
+      try {
+        await ApiService.completeSession(_sessionId!);
+      } catch (e) {
+        debugPrint('Failed to complete session: $e');
+      }
+    }
+    if (mounted) Navigator.pop(context); // Go back or close tab
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -212,9 +243,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () {
-                            // End Session Action
-                          },
+                          onPressed: _endSession,
                           icon: const Icon(Icons.stop_rounded,
                               color: Colors.white, size: 20),
                           label: const Text(

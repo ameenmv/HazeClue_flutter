@@ -57,13 +57,23 @@ class _NotificationInboxScreenState extends State<NotificationInboxScreen> {
             separatorBuilder: (context, index) => const SizedBox(height: 24),
             itemBuilder: (context, index) {
               final notif = notifications[index];
-              return _buildNotificationItem(
-                icon: Icons.notifications,
-                iconColor: kPrimaryPurple,
-                title: notif['title'] ?? 'Notification',
-                message: notif['message'] ?? '...',
-                time: "Recently", 
-                isNew: notif['isRead'] == false,
+              return GestureDetector(
+                onTap: () async {
+                  if (notif['isRead'] == false) {
+                    await ApiService.markNotificationRead(notif['id']);
+                    setState(() {
+                      _notificationsFuture = ApiService.getNotifications();
+                    });
+                  }
+                },
+                child: _buildNotificationItem(
+                  icon: Icons.notifications,
+                  iconColor: kPrimaryPurple,
+                  title: notif['title'] ?? 'Notification',
+                  message: notif['message'] ?? '...',
+                  time: "Recently", 
+                  isNew: notif['isRead'] == false,
+                ),
               );
             },
           );

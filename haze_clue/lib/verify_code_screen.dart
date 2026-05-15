@@ -2,9 +2,39 @@ import 'package:flutter/material.dart';
 import 'main.dart';
 import 'shared_widgets.dart';
 import 'new_password_screen.dart';
+import 'api_service.dart';
 
-class VerifyCodeScreen extends StatelessWidget {
-  const VerifyCodeScreen({super.key});
+class VerifyCodeScreen extends StatefulWidget {
+  final String email;
+  const VerifyCodeScreen({super.key, required this.email});
+
+  @override
+  State<VerifyCodeScreen> createState() => _VerifyCodeScreenState();
+}
+
+class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
+  final TextEditingController _otpController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _handleVerify() async {
+    if (_otpController.text.isEmpty) return;
+    setState(() => _isLoading = true);
+    try {
+      await ApiService.verifyOtp(widget.email, _otpController.text.trim());
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => NewPasswordScreen(email: widget.email, otp: _otpController.text.trim()),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +60,10 @@ class VerifyCodeScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(color: kTextLightGrey, fontSize: 14),
               ),
-              const Text(
-                "nora@gmail.com",
+              Text(
+                widget.email,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: kPrimaryPurple,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -41,29 +71,12 @@ class VerifyCodeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 40),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(
-                  4,
-                  (index) => Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: kInputBg,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
-                      child: Text(
-                        ["1", "3", "4", "2"][index],
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: kTextDark,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+              CustomTextField(
+                controller: _otpController,
+                label: "OTP Code",
+                hint: "123456",
+                prefixIcon: Icons.lock_outline,
+                isPassword: true,
               ),
 
               const SizedBox(height: 40),
@@ -81,18 +94,12 @@ class VerifyCodeScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 40),
-              PrimaryButton(
-                text: "Verify",
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const NewPasswordScreen(),
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : PrimaryButton(
+                      text: "Verify",
+                      onPressed: _handleVerify,
                     ),
-                  );
-                },
-              ),
             ],
           ),
         ),

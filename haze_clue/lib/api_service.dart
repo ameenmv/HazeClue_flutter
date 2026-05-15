@@ -77,31 +77,30 @@ class ApiService {
     await deleteToken();
   }
 
-  static Future<void> forgotPassword(String email) async {
+
+  static Future<void> requestPasswordReset(String email) async {
     final res = await http.post(
       Uri.parse('$baseUrl/account/forgot-password'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email}),
     );
-    if (res.statusCode != 200 && res.statusCode != 201) {
+    if (res.statusCode != 200) {
       final data = jsonDecode(res.body);
-      throw Exception(data['message'] ?? 'Failed to send reset email');
+      throw Exception(data['message'] ?? 'Failed to request reset');
     }
   }
 
-  static Future<void> verifyOtp({
-    required String email,
-    required String otp,
-  }) async {
+  static Future<String> verifyOtp(String email, String otp) async {
     final res = await http.post(
       Uri.parse('$baseUrl/account/verify-otp'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email, 'otp': otp}),
     );
-    if (res.statusCode != 200 && res.statusCode != 201) {
-      final data = jsonDecode(res.body);
-      throw Exception(data['message'] ?? 'OTP verification failed');
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body)['resetToken'] ?? '';
     }
+    final data = jsonDecode(res.body);
+    throw Exception(data['message'] ?? 'Failed to verify OTP');
   }
 
   static Future<void> resetPassword({
@@ -186,5 +185,105 @@ class ApiService {
     if (res.statusCode != 200 && res.statusCode != 201) {
       throw Exception('Failed to submit TDCS consent');
     }
+  }
+
+  static Future<Map<String, dynamic>> updateProfile(String fullName) async {
+    final headers = await _authHeaders();
+    final res = await http.patch(
+      Uri.parse('$baseUrl/users/me'),
+      headers: headers,
+      body: jsonEncode({'fullName': fullName}),
+    );
+    if (res.statusCode == 200) return jsonDecode(res.body);
+    throw Exception('Failed to update profile');
+  }
+
+  static Future<void> changePassword(String currentPassword, String newPassword) async {
+    final headers = await _authHeaders();
+    final res = await http.patch(
+      Uri.parse('$baseUrl/users/me/password'),
+      headers: headers,
+      body: jsonEncode({'currentPassword': currentPassword, 'newPassword': newPassword}),
+    );
+    if (res.statusCode != 200) {
+      final data = jsonDecode(res.body);
+      throw Exception(data['message'] ?? 'Failed to change password');
+    }
+  }
+
+  static Future<List<dynamic>> getDevices() async {
+    final headers = await _authHeaders();
+    final res = await http.get(Uri.parse('$baseUrl/devices'), headers: headers);
+    if (res.statusCode == 200) return jsonDecode(res.body);
+    throw Exception('Failed to get devices');
+  }
+
+  static Future<Map<String, dynamic>> addDevice(String name, String macAddress) async {
+    final headers = await _authHeaders();
+    final res = await http.post(
+      Uri.parse('$baseUrl/devices'),
+      headers: headers,
+      body: jsonEncode({'name': name, 'macAddress': macAddress}),
+    );
+    if (res.statusCode == 200) return jsonDecode(res.body);
+    final error = jsonDecode(res.body);
+    throw Exception(error['message'] ?? 'Failed to add device');
+  }
+
+  static Future<void> deleteDevice(String id) async {
+    final headers = await _authHeaders();
+    final res = await http.delete(Uri.parse('$baseUrl/devices/$id'), headers: headers);
+    if (res.statusCode != 200) throw Exception('Failed to delete device');
+  }
+
+  static Future<Map<String, dynamic>> createSession(String title, int durationMinutes, String? deviceId) async {
+    final headers = await _authHeaders();
+    final res = await http.post(
+      Uri.parse('$baseUrl/sessions'),
+      headers: headers,
+      body: jsonEncode({
+        'title': title,
+        'durationMinutes': durationMinutes,
+        'deviceId': deviceId
+      }),
+    );
+    if (res.statusCode == 200) return jsonDecode(res.body);
+    throw Exception('Failed to create session');
+  }
+
+  static Future<void> completeSession(String id) async {
+    final headers = await _authHeaders();
+    final res = await http.post(Uri.parse('$baseUrl/sessions/$id/complete'), headers: headers);
+    if (res.statusCode != 200) throw Exception('Failed to complete session');
+  }
+
+  static Future<void> submitSessionScore(String id, int score, int timeSeconds) async {
+    final headers = await _authHeaders();
+    final res = await http.post(
+      Uri.parse('$baseUrl/sessions/$id/score'),
+      headers: headers,
+      body: jsonEncode({'score': score, 'completionTimeSeconds': timeSeconds}),
+    );
+    if (res.statusCode != 200) throw Exception('Failed to submit score');
+  }
+
+  static Future<void> markNotificationRead(String id) async {
+    final headers = await _authHeaders();
+    await http.patch(Uri.parse('$baseUrl/notifications/$id/read'), headers: headers);
+  }
+
+  static Future<void> markAllNotificationsRead() async {
+    final headers = await _authHeaders();
+    await http.patch(Uri.parse('$baseUrl/notifications/read-all'), headers: headers);
+  }
+
+  static Future<void> submitSupportTicket(String subject, String message) async {
+    final headers = await _authHeaders();
+    final res = await http.post(
+      Uri.parse('$baseUrl/support/ticket'),
+      headers: headers,
+      body: jsonEncode({'subject': subject, 'message': message}),
+    );
+    if (res.statusCode != 200) throw Exception('Failed to submit ticket');
   }
 }

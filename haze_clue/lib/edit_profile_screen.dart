@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'main.dart';
 import 'shared_widgets.dart';
 
+import 'api_service.dart';
+
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
 
@@ -10,6 +12,36 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
+  final TextEditingController _nameController = TextEditingController();
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final profile = await ApiService.getProfile();
+      _nameController.text = profile['fullName'] ?? '';
+    } catch (e) {
+      debugPrint("Error loading profile: $e");
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    try {
+      await ApiService.updateProfile(_nameController.text);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,9 +67,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            _buildProfileTextField(
+            _isLoading ? const CircularProgressIndicator() : _buildProfileTextField(
               label: "Full name",
-              initialValue: "Puerto Rico",
+              controller: _nameController,
             ),
             const SizedBox(height: 16),
             _buildProfileTextField(
@@ -98,9 +130,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // Go back after saving
-                },
+                onPressed: _saveProfile,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kPrimaryPurple,
                   shape: RoundedRectangleBorder(
@@ -127,11 +157,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Widget _buildProfileTextField({
     required String label,
-    required String initialValue,
+    String? initialValue,
+    TextEditingController? controller,
     Widget? prefixIcon,
   }) {
     return TextFormField(
       initialValue: initialValue,
+      controller: controller,
       style: const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w500,

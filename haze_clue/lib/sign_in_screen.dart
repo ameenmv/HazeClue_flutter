@@ -5,6 +5,7 @@ import 'sign_up_screen.dart';
 import 'forgot_password_screen.dart';
 import 'survey_intro_screen.dart';
 import 'api_service.dart';
+import 'navigation_shell.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -41,12 +42,22 @@ class _SignInScreenState extends State<SignInScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      
+      final profile = await ApiService.getProfile();
+      
       if (!mounted) return;
-      // If login success, go to survey or dashboard
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const SurveyIntroScreen()),
-      );
+      
+      if (profile['onboardingCompleted'] == true) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const MainNavigationShell()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const SurveyIntroScreen()),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

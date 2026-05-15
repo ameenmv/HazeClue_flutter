@@ -2,9 +2,37 @@ import 'package:flutter/material.dart';
 import 'main.dart';
 import 'shared_widgets.dart';
 import 'verify_code_screen.dart';
+import 'api_service.dart';
 
-class ForgotPasswordScreen extends StatelessWidget {
+class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
+
+  @override
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+}
+
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _handleReset() async {
+    if (_emailController.text.isEmpty) return;
+    
+    setState(() => _isLoading = true);
+    try {
+      await ApiService.requestPasswordReset(_emailController.text.trim());
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => VerifyCodeScreen(email: _emailController.text.trim())),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,21 +59,19 @@ class ForgotPasswordScreen extends StatelessWidget {
                 style: TextStyle(color: kTextLightGrey, fontSize: 14),
               ),
               const SizedBox(height: 40),
-              const CustomTextField(
+              CustomTextField(
+                controller: _emailController,
                 label: "Email",
                 hint: "example@gmail.com",
                 prefixIcon: Icons.email_outlined,
               ),
               const SizedBox(height: 30),
-              PrimaryButton(
-                text: "Reset Password",
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const VerifyCodeScreen()),
-                  );
-                },
-              ),
+              _isLoading 
+                  ? const CircularProgressIndicator()
+                  : PrimaryButton(
+                      text: "Reset Password",
+                      onPressed: _handleReset,
+                    ),
             ],
           ),
         ),
