@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'main.dart';
 import 'shared_widgets.dart';
+import 'api_service.dart';
+import 'navigation_shell.dart';
 
 class TdcsConsentScreen extends StatefulWidget {
   const TdcsConsentScreen({super.key});
@@ -17,6 +19,39 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
   // Final consent switches
   bool _consentDataUsage = false;
   bool _consentActivateTdcs = false;
+  bool _isSubmitting = false;
+
+  Future<void> _submitConsent(bool isActivated) async {
+    if (isActivated && (!_checklist.every((c) => c) || !_consentDataUsage || !_consentActivateTdcs)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please check all safety boxes and provide consent to activate tDCS')),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      final payload = {
+        'isActivated': isActivated,
+        'dataUsageConsent': _consentDataUsage,
+        'checklist': _checklist,
+      };
+      await ApiService.submitTdcsConsent(payload);
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const MainNavigationShell()),
+        (route) => false,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Submission failed: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -168,13 +203,13 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
             const SizedBox(height: 32),
 
             // --- Buttons ---
-            SizedBox(
+            _isSubmitting
+              ? const Center(child: CircularProgressIndicator(color: kPrimaryPurple))
+              : SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: Handle Activation
-                },
+                onPressed: () => _submitConsent(true),
                 icon: const Icon(Icons.person_add_alt_1, color: Colors.white),
                 label: const Text(
                   "Activate tDCS & Continue",
@@ -194,13 +229,11 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            SizedBox(
+            if (!_isSubmitting) SizedBox(
               width: double.infinity,
               height: 56,
               child: OutlinedButton.icon(
-                onPressed: () {
-                  // TODO: Handle Opt Out
-                },
+                onPressed: () => _submitConsent(false),
                 icon: const Icon(Icons.person_off_outlined, color: Colors.redAccent),
                 label: const Text(
                   "Opt Out Completely",

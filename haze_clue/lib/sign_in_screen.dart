@@ -37,14 +37,10 @@ class _SignInScreenState extends State<SignInScreen> {
 
     setState(() => _isLoading = true);
     try {
-      // Mock API Call
-      await Future.delayed(const Duration(seconds: 1));
-      /*
       await ApiService.login(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
-      */
       if (!mounted) return;
       // If login success, go to survey or dashboard
       Navigator.pushReplacement(

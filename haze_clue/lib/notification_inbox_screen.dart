@@ -1,8 +1,22 @@
 import 'package:flutter/material.dart';
 import 'main.dart'; // For colors
+import 'api_service.dart';
 
-class NotificationInboxScreen extends StatelessWidget {
+class NotificationInboxScreen extends StatefulWidget {
   const NotificationInboxScreen({super.key});
+
+  @override
+  State<NotificationInboxScreen> createState() => _NotificationInboxScreenState();
+}
+
+class _NotificationInboxScreenState extends State<NotificationInboxScreen> {
+  late Future<List<dynamic>> _notificationsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _notificationsFuture = ApiService.getNotifications();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,61 +39,35 @@ class NotificationInboxScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-        child: Column(
-          children: [
-            _buildNotificationItem(
-              icon: Icons.bluetooth,
-              iconColor: Colors.blueAccent,
-              title: "Device Connection Alert",
-              message:
-                  "Your Bluetooth disconnected unexpectedly during your last focus session. Please check its battery.",
-              time: "2 mins ago",
-              isNew: true,
-            ),
-            const SizedBox(height: 24),
-            _buildNotificationItem(
-              icon: Icons.psychology,
-              iconColor: kPrimaryPurple,
-              title: "AI Insight: Improved Focus",
-              message: "A 5-minute break will help you come back stronger.",
-              time: "8 mins ago",
-              isNew: true,
-            ),
-            const SizedBox(height: 24),
-            _buildNotificationItem(
-              icon: Icons.system_update_alt,
-              iconColor: kPrimaryPurple,
-              title: "App Update Available",
-              message:
-                  "Version 2.3.0 is here with new great analytics and performance improvements.",
-              time: "1 hour ago",
-              isNew: false,
-            ),
-            const SizedBox(height: 24),
-            _buildNotificationItem(
-              icon: Icons.adjust,
-              iconColor: kPrimaryPurple,
-              title: "New Focus Preset Idea",
-              message:
-                  "Try our new “Deep Work Flow” preset for enhanced productivity sessions.",
-              time: "2 hours ago",
-              isNew: false,
-            ),
-            const SizedBox(height: 24),
-            _buildNotificationItem(
-              icon: Icons.notifications,
-              iconColor: kPrimaryPurple,
-              iconBackgroundColor: kPrimaryPurple.withOpacity(0.1),
-              title: "Session Reminder: Meditation",
-              message:
-                  "Your daily meditation session is scheduled for 7 PM today. Find your peace.",
-              time: "Yesterday",
-              isNew: false,
-            ),
-          ],
-        ),
+      body: FutureBuilder<List<dynamic>>(
+        future: _notificationsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}", textAlign: TextAlign.center));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text("No notifications found."));
+          }
+
+          final notifications = snapshot.data!;
+          return ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            itemCount: notifications.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 24),
+            itemBuilder: (context, index) {
+              final notif = notifications[index];
+              return _buildNotificationItem(
+                icon: Icons.notifications,
+                iconColor: kPrimaryPurple,
+                title: notif['title'] ?? 'Notification',
+                message: notif['message'] ?? '...',
+                time: "Recently", 
+                isNew: notif['isRead'] == false,
+              );
+            },
+          );
+        },
       ),
     );
   }

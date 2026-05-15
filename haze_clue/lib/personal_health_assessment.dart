@@ -4,6 +4,8 @@ import 'main.dart';
 import 'shared_widgets.dart';
 import 'navigation_shell.dart';
 
+import 'api_service.dart';
+
 // This class fixes the "slow" or "clunky" scrolling behavior
 class SmoothScrollBehavior extends MaterialScrollBehavior {
   @override
@@ -31,18 +33,37 @@ class _PersonalHealthAssessmentState extends State<PersonalHealthAssessment> {
 
   int? _selectedAge;
 
-  void _nextStep() {
+  bool _isSubmitting = false;
+
+  Future<void> _nextStep() async {
     if (_currentStep < _totalSteps) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     } else {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const MainNavigationShell()),
-        (route) => false,
-      );
+      setState(() => _isSubmitting = true);
+      try {
+        final payload = {
+          'multiSelections': _multiSelections.map((key, value) => MapEntry(key.toString(), value)),
+          'singleSelections': _singleSelections.map((key, value) => MapEntry(key.toString(), value)),
+          'age': _selectedAge,
+        };
+        await ApiService.submitHealthAssessment(payload);
+        if (!mounted) return;
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const MainNavigationShell()),
+          (route) => false,
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Submission failed: $e')),
+        );
+      } finally {
+        if (mounted) setState(() => _isSubmitting = false);
+      }
     }
   }
 
@@ -109,21 +130,23 @@ class _PersonalHealthAssessmentState extends State<PersonalHealthAssessment> {
             ),
             Padding(
               padding: const EdgeInsets.all(24.0),
-              child: PrimaryButton(
-                text: "NEXT",
-                onPressed: _isPageValid()
-                    ? _nextStep
-                    : () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "Please complete all fields before continuing",
+              child: _isSubmitting 
+                ? const CircularProgressIndicator(color: kPrimaryPurple)
+                : PrimaryButton(
+                  text: _currentStep == _totalSteps ? "FINISH" : "NEXT",
+                  onPressed: _isPageValid()
+                      ? _nextStep
+                      : () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Please complete all fields before continuing",
+                              ),
+                              duration: Duration(seconds: 1),
                             ),
-                            duration: Duration(seconds: 1),
-                          ),
-                        );
-                      },
-              ),
+                          );
+                        },
+                ),
             ),
           ],
         ),

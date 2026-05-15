@@ -3,9 +3,25 @@ import 'main.dart';
 import 'my_devices_screen.dart';
 import 'concentration_puzzle_screen.dart';
 import 'notification_inbox_screen.dart';
+import 'api_service.dart';
 
-class DashboardContent extends StatelessWidget {
+class DashboardContent extends StatefulWidget {
   const DashboardContent({super.key});
+
+  @override
+  State<DashboardContent> createState() => _DashboardContentState();
+}
+
+class _DashboardContentState extends State<DashboardContent> {
+  late Future<Map<String, dynamic>> _statsFuture;
+  late Future<List<dynamic>> _sessionsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _statsFuture = ApiService.getDashboardStats();
+    _sessionsFuture = ApiService.getSessions();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,48 +65,91 @@ class DashboardContent extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16),
-            _buildFocusCard(),
-            const SizedBox(height: 32),
-            const Text(
-              "Quick Actions",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: kTextDark,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          setState(() {
+            _statsFuture = ApiService.getDashboardStats();
+            _sessionsFuture = ApiService.getSessions();
+          });
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
+              FutureBuilder<Map<String, dynamic>>(
+                future: _statsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const SizedBox(
+                      height: 250,
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  } else if (snapshot.hasError) {
+                    return SizedBox(
+                      height: 250,
+                      child: Center(child: Text("Failed to load stats", textAlign: TextAlign.center,)),
+                    );
+                  }
+                  
+                  final stats = snapshot.data ?? {};
+                  final focusPercentage = (stats['avgAttention'] ?? 100) / 100.0;
+                  final focusLabel = '${(focusPercentage * 100).toInt()}%';
+
+                  return _buildFocusCard(focusPercentage, focusLabel);
+                },
               ),
-            ),
-            const SizedBox(height: 16),
-            _buildQuickActions(context),
-            const SizedBox(height: 32),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Recent Activity",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: kTextDark,
-                  ),
+              const SizedBox(height: 32),
+              const Text(
+                "Quick Actions",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: kTextDark,
                 ),
-                Icon(Icons.trending_up, color: Colors.grey.shade400),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildActivityList(),
-          ],
+              ),
+              const SizedBox(height: 16),
+              _buildQuickActions(context),
+              const SizedBox(height: 32),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Recent Activity",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: kTextDark,
+                    ),
+                  ),
+                  Icon(Icons.trending_up, color: Colors.grey.shade400),
+                ],
+              ),
+              const SizedBox(height: 16),
+              FutureBuilder<List<dynamic>>(
+                future: _sessionsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text("Failed to load activities"));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text("No recent activities."));
+                  }
+                  return _buildActivityList(snapshot.data!);
+                },
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildFocusCard() {
+  Widget _buildFocusCard(double focusPercentage, String focusLabel) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -127,7 +186,7 @@ class DashboardContent extends StatelessWidget {
                 height: 160,
                 width: 160,
                 child: CircularProgressIndicator(
-                  value: 0.8, // Adjust based on data
+                  value: focusPercentage, 
                   strokeWidth: 14,
                   backgroundColor: Colors.grey.shade100,
                   color: kPrimaryPurple,
@@ -136,9 +195,9 @@ class DashboardContent extends StatelessWidget {
               ),
               Column(
                 children: [
-                  const Text(
-                    "100%",
-                    style: TextStyle(
+                  Text(
+                    focusLabel,
+                    style: const TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
                       color: kTextDark,
@@ -237,25 +296,15 @@ class DashboardContent extends StatelessWidget {
     );
   }
 
-  Widget _buildActivityList() {
+  Widget _buildActivityList(List<dynamic> sessions) {
     return Column(
-      children: [
-        _activityTile(
-          Icons.trending_up,
-          "30 min Focus Session completed",
-          "1 hour ago",
-        ),
-        _activityTile(
-          Icons.psychology_outlined,
-          "Cognitive Training: Memory Drill",
-          "Yesterday",
-        ),
-        _activityTile(
-          Icons.music_note_outlined,
-          "Listened to Alpha Waves for 45 min",
-          "2 days ago",
-        ),
-      ],
+      children: sessions.take(3).map((session) {
+        return _activityTile(
+          Icons.trending_up, 
+          session['title'] ?? 'Session Completed',
+          session['status'] ?? 'Recently',
+        );
+      }).toList(),
     );
   }
 

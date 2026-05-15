@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // Use 10.0.2.2 for Android emulator, or your PC's IP for real device
-  static const String baseUrl = 'http://10.0.2.2:3001/api';
+  // Use 10.0.2.2 for Android emulator, or localhost for Chrome/Linux desktop
+  static const String baseUrl = 'http://localhost:5220/api/v1';
 
   // ─── Token helpers ───────────────────────────────────────────
   static Future<void> saveToken(String token) async {
@@ -38,7 +38,7 @@ class ApiService {
     required String password,
   }) async {
     final res = await http.post(
-      Uri.parse('$baseUrl/auth/register'),
+      Uri.parse('$baseUrl/account/register'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'FullName': name,
@@ -59,7 +59,7 @@ class ApiService {
     required String password,
   }) async {
     final res = await http.post(
-      Uri.parse('$baseUrl/auth/login'),
+      Uri.parse('$baseUrl/account/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email, 'password': password}),
     );
@@ -73,13 +73,13 @@ class ApiService {
 
   static Future<void> logout() async {
     final headers = await _authHeaders();
-    await http.post(Uri.parse('$baseUrl/auth/logout'), headers: headers);
+    await http.post(Uri.parse('$baseUrl/account/logout'), headers: headers);
     await deleteToken();
   }
 
   static Future<void> forgotPassword(String email) async {
     final res = await http.post(
-      Uri.parse('$baseUrl/auth/forgot-password'),
+      Uri.parse('$baseUrl/account/forgot-password'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email}),
     );
@@ -94,7 +94,7 @@ class ApiService {
     required String otp,
   }) async {
     final res = await http.post(
-      Uri.parse('$baseUrl/auth/verify-otp'),
+      Uri.parse('$baseUrl/account/verify-otp'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email, 'otp': otp}),
     );
@@ -110,7 +110,7 @@ class ApiService {
     required String newPassword,
   }) async {
     final res = await http.post(
-      Uri.parse('$baseUrl/auth/reset-password'),
+      Uri.parse('$baseUrl/account/reset-password'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'email': email,
@@ -162,5 +162,29 @@ class ApiService {
     );
     if (res.statusCode == 200) return jsonDecode(res.body);
     throw Exception('Failed to get notifications');
+  }
+
+  static Future<void> submitHealthAssessment(Map<String, dynamic> data) async {
+    final headers = await _authHeaders();
+    final res = await http.post(
+      Uri.parse('$baseUrl/assessments/health'),
+      headers: headers,
+      body: jsonEncode(data),
+    );
+    if (res.statusCode != 200 && res.statusCode != 201) {
+      throw Exception('Failed to submit health assessment');
+    }
+  }
+
+  static Future<void> submitTdcsConsent(Map<String, dynamic> data) async {
+    final headers = await _authHeaders();
+    final res = await http.post(
+      Uri.parse('$baseUrl/assessments/tdcs-consent'),
+      headers: headers,
+      body: jsonEncode(data),
+    );
+    if (res.statusCode != 200 && res.statusCode != 201) {
+      throw Exception('Failed to submit TDCS consent');
+    }
   }
 }
