@@ -377,7 +377,6 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                 ],
               ),
             ),
-            ),
             const SizedBox(height: 24),
             
             // --- Play Button ---
