@@ -395,9 +395,9 @@ class _SessionsScreenState extends State<SessionsScreen> {
                                 ),
                                 child: Text(
                                   "$duration",
-                                  style: TextStyle(
-                                    color: isSelected ? textColor.inversePrimary : textColor.withOpacity(0.8),
-                                    fontWeight: FontWeight.bold,
+                                    style: TextStyle(
+                                      color: isSelected ? Colors.white : textColor.withOpacity(0.8),
+                                      fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                   ),
                                 ),
