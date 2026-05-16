@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'main.dart'; // For colors
-
 import 'api_service.dart';
+import 'device_data_service.dart';
+import 'signalr_service.dart';
 
 class SessionsScreen extends StatefulWidget {
   const SessionsScreen({super.key});
@@ -13,50 +15,173 @@ class SessionsScreen extends StatefulWidget {
 class _SessionsScreenState extends State<SessionsScreen> {
   int _selectedDuration = 15;
   final List<int> _durations = [5, 10, 15, 20, 25, 30];
+  
+  bool _isSessionActive = false;
   bool _isPaused = false;
   String? _sessionId;
+
+  // Timer state
+  Timer? _countdownTimer;
+  int _secondsRemaining = 15 * 60;
+  
+  // Data streaming state
+  final DeviceDataService _deviceDataService = DeviceDataService();
+  final SignalRService _signalRService = SignalRService();
+  
+  int _currentConcentration = 0;
+  int _totalConcentrationSum = 0;
+  int _concentrationDataPoints = 0;
+  StreamSubscription<int>? _streamSubscription;
 
   @override
   void initState() {
     super.initState();
-    _startSession();
+    _signalRService.connect();
+  }
+
+  @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    _streamSubscription?.cancel();
+    _deviceDataService.dispose();
+    _signalRService.disconnect();
+    super.dispose();
   }
 
   Future<void> _startSession() async {
+    if (_isSessionActive) return;
+
+    setState(() {
+      _isSessionActive = true;
+      _secondsRemaining = _selectedDuration * 60;
+      _totalConcentrationSum = 0;
+      _concentrationDataPoints = 0;
+      _isPaused = false;
+    });
+
     try {
       final res = await ApiService.createSession("Focus Session", _selectedDuration, null);
-      setState(() {
-        _sessionId = res['id'];
-      });
+      _sessionId = res['id'];
+      
+      _startTimerAndStream();
     } catch (e) {
       debugPrint('Failed to start session: $e');
+      setState(() => _isSessionActive = false);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to start session')));
+    }
+  }
+
+  void _startTimerAndStream() {
+    _deviceDataService.startStreaming();
+    _streamSubscription = _deviceDataService.concentrationStream.listen((value) {
+      if (!_isPaused) {
+        setState(() {
+          _currentConcentration = value;
+          _totalConcentrationSum += value;
+          _concentrationDataPoints++;
+        });
+        
+        if (_sessionId != null) {
+          _signalRService.streamConcentrationData(_sessionId!, value);
+        }
+      }
+    });
+
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!_isPaused) {
+        setState(() {
+          if (_secondsRemaining > 0) {
+            _secondsRemaining--;
+          } else {
+            _endSession();
+          }
+        });
+      }
+    });
+  }
+
+  Future<void> _pauseOrResumeSession() async {
+    setState(() {
+      _isPaused = !_isPaused;
+    });
+
+    if (_sessionId != null) {
+      try {
+        if (_isPaused) {
+          await ApiService.pauseSession(_sessionId!);
+        } else {
+          await ApiService.resumeSession(_sessionId!);
+        }
+      } catch (e) {
+        debugPrint('Failed to toggle pause state on server: $e');
+      }
     }
   }
 
   Future<void> _endSession() async {
+    _countdownTimer?.cancel();
+    _streamSubscription?.cancel();
+    _deviceDataService.stopStreaming();
+
+    setState(() {
+      _isSessionActive = false;
+    });
+
+    int averageConcentration = 0;
+    if (_concentrationDataPoints > 0) {
+      averageConcentration = (_totalConcentrationSum / _concentrationDataPoints).round();
+    }
+
+    int elapsedSeconds = (_selectedDuration * 60) - _secondsRemaining;
+
     if (_sessionId != null) {
       try {
-        await ApiService.completeSession(_sessionId!);
+        await ApiService.completeSession(_sessionId!, averageConcentration, elapsedSeconds);
+        _showCompletionDialog(averageConcentration, elapsedSeconds);
       } catch (e) {
         debugPrint('Failed to complete session: $e');
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to save session')));
       }
     }
-    if (mounted) Navigator.pop(context); // Go back or close tab
+  }
+
+  void _showCompletionDialog(int avgConcentration, int elapsedSeconds) {
+    String timeString = _formatTime(elapsedSeconds);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: const Text("Session Complete!"),
+        content: Text("You completed $timeString of focus.\n\nAverage Concentration: $avgConcentration%"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+            },
+            child: const Text("Done", style: TextStyle(color: kPrimaryPurple)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatTime(int totalSeconds) {
+    int minutes = totalSeconds ~/ 60;
+    int seconds = totalSeconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), // Matching background
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         backgroundColor: const Color(0xFFF8F9FA),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-          onPressed: () {
-            // Handle back if needed, or ignore if it's a bottom nav root
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "Concentration level",
@@ -72,9 +197,11 @@ class _SessionsScreenState extends State<SessionsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "The session is ongoing.",
-              style: TextStyle(
+            Text(
+              _isSessionActive 
+                  ? (_isPaused ? "The session is paused." : "The session is ongoing.") 
+                  : "Ready to focus?",
+              style: const TextStyle(
                 color: Colors.grey,
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
@@ -94,11 +221,11 @@ class _SessionsScreenState extends State<SessionsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Center(
+                  Center(
                     child: Text(
-                      "00:12",
-                      style: TextStyle(
-                        fontSize: 24,
+                      _isSessionActive ? _formatTime(_secondsRemaining) : _formatTime(_selectedDuration * 60),
+                      style: const TextStyle(
+                        fontSize: 48, // Made larger
                         fontWeight: FontWeight.bold,
                         color: kTextDark,
                       ),
@@ -113,15 +240,16 @@ class _SessionsScreenState extends State<SessionsScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Custom Linear Progress Bar
+                  // Custom Linear Progress Bar for Time
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: LinearProgressIndicator(
-                      value: 0.12 / _selectedDuration, // mock value
+                      value: _isSessionActive 
+                          ? 1.0 - (_secondsRemaining / (_selectedDuration * 60)) 
+                          : 0.0,
                       minHeight: 12,
                       backgroundColor: Colors.grey.shade200,
-                      valueColor:
-                          const AlwaysStoppedAnimation<Color>(kPrimaryPurple),
+                      valueColor: const AlwaysStoppedAnimation<Color>(kPrimaryPurple),
                     ),
                   ),
                 ],
@@ -143,7 +271,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "session configuration",
+                    "Session Configuration",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -153,8 +281,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      const Icon(Icons.access_time,
-                          size: 20, color: Colors.black87),
+                      const Icon(Icons.access_time, size: 20, color: Colors.black87),
                       const SizedBox(width: 8),
                       const Text(
                         "Duration(min)",
@@ -168,55 +295,61 @@ class _SessionsScreenState extends State<SessionsScreen> {
                   ),
                   const SizedBox(height: 16),
                   // Duration Bubbles
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: _durations.map((duration) {
-                      bool isSelected = duration == _selectedDuration;
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedDuration = duration;
-                          });
-                        },
-                        child: Container(
-                          width: 48,
-                          height: 48,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? kPrimaryPurple
-                                : Colors.grey.shade100,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            "$duration",
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : kTextDark,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                  IgnorePointer(
+                    ignoring: _isSessionActive,
+                    child: Opacity(
+                      opacity: _isSessionActive ? 0.5 : 1.0,
+                      child: Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: _durations.map((duration) {
+                          bool isSelected = duration == _selectedDuration;
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedDuration = duration;
+                                _secondsRemaining = duration * 60;
+                              });
+                            },
+                            child: Container(
+                              width: 48,
+                              height: 48,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: isSelected ? kPrimaryPurple : Colors.grey.shade100,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                "$duration",
+                                style: TextStyle(
+                                  color: isSelected ? Colors.white : kTextDark,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                          );
+                        }).toList(),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 32),
-
-                  // Concentration Rate
+                  
+                  // Live Concentration Rate Section
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        "Concentration Rate",
+                        "Live Concentration Rate",
                         style: TextStyle(
-                          fontSize: 16,
-                          color: kTextDark,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
                         ),
                       ),
-                      const Text(
-                        "48%",
-                        style: TextStyle(
+                      Text(
+                        _isSessionActive ? "$_currentConcentration%" : "--%",
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: kPrimaryPurple,
@@ -227,33 +360,39 @@ class _SessionsScreenState extends State<SessionsScreen> {
                   const SizedBox(height: 12),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: LinearProgressIndicator(
-                      value: 0.48, // 48%
-                      minHeight: 12,
-                      backgroundColor: Colors.grey.shade200,
-                      valueColor:
-                          const AlwaysStoppedAnimation<Color>(kPrimaryPurple),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 500),
+                      child: LinearProgressIndicator(
+                        value: _isSessionActive ? _currentConcentration / 100 : 0.0,
+                        minHeight: 12,
+                        backgroundColor: Colors.grey.shade200,
+                        valueColor: const AlwaysStoppedAnimation<Color>(kPrimaryPurple),
+                      ),
                     ),
                   ),
-
                   const SizedBox(height: 32),
 
-                  // Bottom Buttons
+                  // Action Buttons
                   Row(
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: _endSession,
-                          icon: const Icon(Icons.stop_rounded,
-                              color: Colors.white, size: 20),
-                          label: const Text(
-                            "End Session",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
+                          onPressed: _isSessionActive ? _endSession : _startSession,
+                          icon: Icon(
+                            _isSessionActive ? Icons.stop : Icons.play_arrow,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                          label: Text(
+                            _isSessionActive ? "End Session" : "Start Session",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFD32F2F), // Red
+                            backgroundColor: _isSessionActive ? const Color(0xFFE53935) : kPrimaryPurple,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -262,34 +401,33 @@ class _SessionsScreenState extends State<SessionsScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              _isPaused = !_isPaused;
-                            });
-                          },
-                          icon: Icon(
-                            _isPaused ? Icons.play_arrow : Icons.pause,
-                            color: Colors.black87,
-                            size: 20,
-                          ),
-                          label: Text(
-                            _isPaused ? "Resume" : "Pause",
-                            style: const TextStyle(
-                                color: Colors.black87,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                      if (_isSessionActive) const SizedBox(width: 16),
+                      if (_isSessionActive)
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _pauseOrResumeSession,
+                            icon: Icon(
+                              _isPaused ? Icons.play_arrow : Icons.pause,
+                              color: kTextDark,
+                              size: 18,
                             ),
-                            side: BorderSide(color: Colors.grey.shade300),
+                            label: Text(
+                              _isPaused ? "Resume" : "Pause",
+                              style: const TextStyle(
+                                color: kTextDark,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              side: BorderSide(color: Colors.grey.shade300),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ],

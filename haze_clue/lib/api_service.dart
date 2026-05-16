@@ -362,10 +362,29 @@ class ApiService {
     throw Exception('Failed to create session');
   }
 
-  static Future<void> completeSession(String id) async {
+  static Future<void> completeSession(String id, int averageConcentration, int actualDurationSeconds) async {
     final headers = await _authHeaders();
-    final res = await http.post(Uri.parse('$baseUrl/sessions/$id/complete'), headers: headers);
+    final res = await http.post(
+      Uri.parse('$baseUrl/sessions/$id/complete'),
+      headers: headers,
+      body: jsonEncode({
+        'averageConcentration': averageConcentration,
+        'actualDurationSeconds': actualDurationSeconds,
+      }),
+    );
     if (res.statusCode != 200) throw Exception('Failed to complete session');
+  }
+
+  static Future<void> pauseSession(String id) async {
+    final headers = await _authHeaders();
+    final res = await http.post(Uri.parse('$baseUrl/sessions/$id/pause'), headers: headers);
+    if (res.statusCode != 200) throw Exception('Failed to pause session');
+  }
+
+  static Future<void> resumeSession(String id) async {
+    final headers = await _authHeaders();
+    final res = await http.post(Uri.parse('$baseUrl/sessions/$id/resume'), headers: headers);
+    if (res.statusCode != 200) throw Exception('Failed to resume session');
   }
 
   static Future<void> submitSessionScore(String id, int score, int timeSeconds) async {

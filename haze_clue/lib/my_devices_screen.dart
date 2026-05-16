@@ -14,6 +14,9 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
   int _selectedCategory = 0;
   final List<String> _categories = ["All", "EEG", "Smartwatch", "tDCS"];
   late Future<List<dynamic>> _devicesFuture;
+  
+  bool _isScanning = false;
+  List<Map<String, String>> _scannedDevices = [];
 
   @override
   void initState() {
@@ -24,6 +27,26 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
   void _loadDevices() {
     setState(() {
       _devicesFuture = ApiService.getDevices();
+    });
+  }
+
+  void _startScan() {
+    setState(() {
+      _isScanning = true;
+      _scannedDevices.clear();
+    });
+
+    // Simulate bluetooth scan delay
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          _isScanning = false;
+          _scannedDevices = [
+            {"name": "Muse S (Gen 2)", "mac": "00:11:22:33:44:55"},
+            {"name": "NeuroSky MindWave", "mac": "AA:BB:CC:DD:EE:FF"},
+          ];
+        });
+      }
     });
   }
 
@@ -165,40 +188,55 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
             const SizedBox(height: 32),
 
             // --- Available Devices ---
-            const Text(
-              "Available Devices",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: kTextDark,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Available Devices",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: kTextDark,
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: _isScanning ? null : _startScan,
+                  icon: _isScanning 
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) 
+                    : const Icon(Icons.bluetooth_searching),
+                  label: Text(_isScanning ? "Scanning..." : "Scan"),
+                  style: TextButton.styleFrom(foregroundColor: kPrimaryPurple),
+                )
+              ],
             ),
             const SizedBox(height: 16),
-            TextField(
-              decoration: InputDecoration(
-                hintText: "Scan for Devices",
-                hintStyle: TextStyle(color: Colors.grey.shade400),
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+            if (_scannedDevices.isEmpty && !_isScanning)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade300, style: BorderStyle.dash),
+                ),
+                child: const Column(
+                  children: [
+                    Icon(Icons.bluetooth_disabled, color: Colors.grey, size: 40),
+                    SizedBox(height: 8),
+                    Text("No devices found", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)),
+                    Text("Tap scan to search for nearby headsets", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            _buildAvailableDeviceItem(
-              icon: Icons.bolt,
-              name: "FocusStim Headset",
-              signal: "fair",
-            ),
-            const SizedBox(height: 16),
-            _buildAvailableDeviceItem(
-              icon: Icons.psychology,
-              name: "MindLink EEG",
-              signal: "good",
-            ),
+            ..._scannedDevices.map((device) => Padding(
+              padding: const EdgeInsets.only(bottom: 16.0),
+              child: _buildAvailableDeviceItem(
+                icon: Icons.psychology,
+                name: device['name']!,
+                signal: "good",
+                onTap: () => _connectDevice(device['name']!, device['mac']!),
+              ),
+            )),
           ],
         ),
       ),
@@ -297,25 +335,23 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
     required IconData icon,
     required String name,
     required String signal,
+    required VoidCallback onTap,
   }) {
-    Color signalColor = signal == 'good' ? kSuccessGreen : Colors.orangeAccent;
-
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, size: 28, color: Colors.black87),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade200),
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
+        child: Row(
+          children: [
+            Icon(icon, size: 32, color: Colors.black87),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
                 name,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
@@ -323,15 +359,6 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
                   fontSize: 15,
                 ),
               ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  const Icon(Icons.wifi_off, size: 14, color: Colors.redAccent),
-                  const SizedBox(width: 4),
-                  const Text(
-                    "Disconnected",
-                    style: TextStyle(color: Colors.redAccent, fontSize: 12),
-                  ),
                   const SizedBox(width: 12),
                   Icon(Icons.signal_cellular_alt, size: 14, color: signalColor),
                   const SizedBox(width: 4),
