@@ -75,6 +75,7 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -82,13 +83,13 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "My Devices",
           style: TextStyle(
-            color: Colors.white,
+            color: textColor,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
@@ -102,12 +103,12 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // --- Device Categories ---
-                const Text(
+                Text(
                   "Device Categories",
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: textColor,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -129,12 +130,12 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
                             decoration: BoxDecoration(
                               color: _selectedCategory == index 
                                   ? const Color(0xFF8B5CF6) 
-                                  : Colors.white.withOpacity(0.1),
+                                  : textColor.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: _selectedCategory == index 
                                     ? const Color(0xFF8B5CF6) 
-                                    : Colors.white.withOpacity(0.3),
+                                    : textColor.withOpacity(0.3),
                               ),
                             ),
                             child: Row(
@@ -147,7 +148,7 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
                                 Text(
                                   _categories[index],
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(_selectedCategory == index ? 1.0 : 0.7),
+                                    color: _selectedCategory == index ? Colors.white : textColor.withOpacity(0.7),
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -161,12 +162,12 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                const Text(
+                Text(
                   "Connected Devices",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: textColor,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -174,13 +175,13 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
                   future: _devicesFuture,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator(color: Colors.white));
+                      return Center(child: CircularProgressIndicator(color: textColor));
                     } else if (snapshot.hasError) {
                       return const Center(child: Text("Error loading devices", style: TextStyle(color: Colors.redAccent)));
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        child: Text("No devices connected.", style: TextStyle(color: Colors.white.withOpacity(0.6))),
+                        child: Text("No devices connected.", style: TextStyle(color: textColor.withOpacity(0.6))),
                       );
                     }
                     final devices = snapshot.data!;
@@ -189,6 +190,7 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 16.0),
                           child: _buildConnectedDeviceItem(
+                            context: context,
                             id: d['id'],
                             icon: Icons.psychology_outlined,
                             name: d['name'] ?? "Unknown Device",
@@ -207,12 +209,12 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       "Available Devices",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: textColor,
                       ),
                     ),
                     TextButton.icon(
@@ -232,10 +234,10 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
                       padding: const EdgeInsets.all(24),
                       child: Column(
                         children: [
-                          Icon(Icons.bluetooth_disabled, color: Colors.white.withOpacity(0.5), size: 40),
+                          Icon(Icons.bluetooth_disabled, color: textColor.withOpacity(0.5), size: 40),
                           const SizedBox(height: 8),
-                          Text("No devices found", style: TextStyle(color: Colors.white.withOpacity(0.7), fontWeight: FontWeight.w500)),
-                          Text("Tap scan to search for nearby headsets", style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13)),
+                          Text("No devices found", style: TextStyle(color: textColor.withOpacity(0.7), fontWeight: FontWeight.w500)),
+                          Text("Tap scan to search for nearby headsets", style: TextStyle(color: textColor.withOpacity(0.5), fontSize: 13)),
                         ],
                       ),
                     ),
@@ -243,6 +245,7 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
                 ..._scannedDevices.map((device) => Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: _buildAvailableDeviceItem(
+                    context: context,
                     icon: Icons.psychology,
                     name: device['name']!,
                     signal: "good",
@@ -258,6 +261,7 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
   }
 
   Widget _buildConnectedDeviceItem({
+    required BuildContext context,
     required String id,
     required IconData icon,
     required String name,
@@ -265,6 +269,8 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
     required String battery,
     required String signal,
   }) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
     return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -285,16 +291,16 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
                 children: [
                   Text(
                     name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: textColor,
                       fontSize: 16,
                     ),
                   ),
                   Text(
                     model,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.6),
+                      color: textColor.withOpacity(0.6),
                       fontSize: 13,
                     ),
                   ),
@@ -319,7 +325,7 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
                 ],
               ),
             ),
-            const Icon(Icons.settings_outlined, color: Colors.white, size: 20),
+            Icon(Icons.settings_outlined, color: textColor, size: 20),
             const SizedBox(width: 12),
             GestureDetector(
               onTap: () => _removeDevice(id),
@@ -332,11 +338,13 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
   }
 
   Widget _buildAvailableDeviceItem({
+    required BuildContext context,
     required IconData icon,
     required String name,
     required String signal,
     required VoidCallback onTap,
   }) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
     return GestureDetector(
       onTap: onTap,
       child: GlassCard(
@@ -347,18 +355,18 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: textColor.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, size: 28, color: Colors.white),
+                child: Icon(icon, size: 28, color: textColor),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: textColor,
                     fontSize: 16,
                   ),
                 ),
