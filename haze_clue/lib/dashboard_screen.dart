@@ -4,6 +4,7 @@ import 'my_devices_screen.dart';
 import 'concentration_puzzle_screen.dart';
 import 'notification_inbox_screen.dart';
 import 'api_service.dart';
+import 'training_screen.dart';
 
 class DashboardContent extends StatefulWidget {
   const DashboardContent({super.key});
@@ -252,8 +253,7 @@ class _DashboardContentState extends State<DashboardContent> {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                  builder: (_) => const ConcentrationPuzzleScreen()),
+              MaterialPageRoute(builder: (_) => const TrainingScreen()),
             );
           },
         ),
@@ -261,6 +261,12 @@ class _DashboardContentState extends State<DashboardContent> {
           Icons.music_note_outlined,
           "Binaural\nBeats",
           const Color(0xFFF0FFF4),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const TrainingScreen()),
+            );
+          },
         ),
       ],
     );
