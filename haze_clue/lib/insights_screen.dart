@@ -14,7 +14,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
   bool _isLoading = true;
   String _errorMessage = '';
   
-  int _totalFocusMinutes = 0;
+  int _totalFocusSeconds = 0;
   int _averageMinutesPerDay = 0;
   int _overallAverageConcentration = 0;
   int _totalSessionsCount = 0;
@@ -33,7 +33,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
       final data = await ApiService.getInsights();
       if (!mounted) return;
       setState(() {
-        _totalFocusMinutes = data['totalFocusMinutes'] ?? 0;
+        _totalFocusSeconds = data['totalFocusSeconds'] ?? 0;
         _averageMinutesPerDay = data['averageMinutesPerDay'] ?? 0;
         _overallAverageConcentration = data['overallAverageConcentration'] ?? 0;
         _totalSessionsCount = data['totalSessionsCount'] ?? 0;
@@ -51,7 +51,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
     }
   }
 
-  String _formatDuration(int totalMinutes) {
+  String _formatDuration(int totalSeconds) {
+    if (totalSeconds < 60) {
+      return '$totalSeconds secs';
+    }
+    int totalMinutes = totalSeconds ~/ 60;
     int hours = totalMinutes ~/ 60;
     int minutes = totalMinutes % 60;
     if (hours > 0) {
@@ -91,7 +95,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
       );
     }
 
-    if (_totalFocusMinutes == 0) {
+    if (_totalFocusSeconds == 0) {
       return _buildEmptyState();
     }
 
@@ -162,7 +166,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
       children: [
         Row(
           children: [
-            Expanded(child: _buildStatCard(Icons.timer, "Total Time", _formatDuration(_totalFocusMinutes))),
+            Expanded(child: _buildStatCard(Icons.timer, "Total Time", _formatDuration(_totalFocusSeconds))),
             const SizedBox(width: 16),
             Expanded(child: _buildStatCard(Icons.psychology, "Avg Conc.", "$_overallAverageConcentration%")),
           ],
@@ -263,7 +267,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
           textBaseline: TextBaseline.alphabetic,
           children: [
             Text(
-              _formatDuration(_totalFocusMinutes),
+              _formatDuration(_totalFocusSeconds),
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -271,7 +275,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            Text("${_formatDuration(_averageMinutesPerDay)} Avg per Day", style: TextStyle(color: Colors.grey.shade600)),
+            Text("${_formatDuration(_averageMinutesPerDay * 60)} Avg per Day", style: TextStyle(color: Colors.grey.shade600)),
           ],
         ),
         const SizedBox(height: 20),
