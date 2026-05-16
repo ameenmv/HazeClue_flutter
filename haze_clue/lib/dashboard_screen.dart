@@ -16,12 +16,14 @@ class DashboardContent extends StatefulWidget {
 class _DashboardContentState extends State<DashboardContent> {
   late Future<Map<String, dynamic>> _statsFuture;
   late Future<List<dynamic>> _sessionsFuture;
+  late Future<List<dynamic>> _notificationsFuture;
 
   @override
   void initState() {
     super.initState();
     _statsFuture = ApiService.getDashboardStats();
     _sessionsFuture = ApiService.getSessions();
+    _notificationsFuture = ApiService.getNotifications();
   }
 
   @override
@@ -49,18 +51,67 @@ class _DashboardContentState extends State<DashboardContent> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_none_outlined,
-              color: kTextDark,
-              size: 28,
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const NotificationInboxScreen(),
-                ),
+          FutureBuilder<List<dynamic>>(
+            future: _notificationsFuture,
+            builder: (context, snapshot) {
+              int unreadCount = 0;
+              if (snapshot.hasData) {
+                unreadCount = snapshot.data!.where((n) => n['isRead'] == false).length;
+              }
+
+              Widget icon = const Icon(
+                Icons.notifications_none_outlined,
+                color: kTextDark,
+                size: 28,
+              );
+
+              if (unreadCount > 0) {
+                icon = Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    icon,
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          unreadCount > 9 ? '+9' : unreadCount.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              return IconButton(
+                icon: icon,
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const NotificationInboxScreen(),
+                    ),
+                  );
+                  // Refresh notifications count when returning from inbox
+                  setState(() {
+                    _notificationsFuture = ApiService.getNotifications();
+                  });
+                },
               );
             },
           ),
@@ -71,6 +122,7 @@ class _DashboardContentState extends State<DashboardContent> {
           setState(() {
             _statsFuture = ApiService.getDashboardStats();
             _sessionsFuture = ApiService.getSessions();
+            _notificationsFuture = ApiService.getNotifications();
           });
         },
         child: SingleChildScrollView(

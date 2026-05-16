@@ -38,6 +38,17 @@ class _NotificationInboxScreenState extends State<NotificationInboxScreen> {
             fontSize: 20,
           ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              await ApiService.markAllNotificationsRead();
+              setState(() {
+                _notificationsFuture = ApiService.getNotifications();
+              });
+            },
+            child: const Text("Mark All Read", style: TextStyle(color: kPrimaryPurple)),
+          ),
+        ],
       ),
       body: FutureBuilder<List<dynamic>>(
         future: _notificationsFuture,
