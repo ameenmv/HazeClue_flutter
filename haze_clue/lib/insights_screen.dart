@@ -16,6 +16,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
   
   int _totalFocusMinutes = 0;
   int _averageMinutesPerDay = 0;
+  int _overallAverageConcentration = 0;
+  int _totalSessionsCount = 0;
+  int _improvementPercentage = 0;
   List<int> _weeklyData = [];
   List<int> _monthlyData = [];
 
@@ -32,6 +35,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
       setState(() {
         _totalFocusMinutes = data['totalFocusMinutes'] ?? 0;
         _averageMinutesPerDay = data['averageMinutesPerDay'] ?? 0;
+        _overallAverageConcentration = data['overallAverageConcentration'] ?? 0;
+        _totalSessionsCount = data['totalSessionsCount'] ?? 0;
+        _improvementPercentage = data['improvementPercentage'] ?? 0;
         _weeklyData = List<int>.from(data['weeklyData'] ?? []);
         _monthlyData = List<int>.from(data['monthlyData'] ?? []);
         _isLoading = false;
@@ -94,6 +100,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildHeroStats(),
+          const SizedBox(height: 32),
           const Text(
             "Weekly Focus Details",
             style: TextStyle(
@@ -145,6 +153,99 @@ class _InsightsScreenState extends State<InsightsScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeroStats() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(child: _buildStatCard(Icons.timer, "Total Time", _formatDuration(_totalFocusMinutes))),
+            const SizedBox(width: 16),
+            Expanded(child: _buildStatCard(Icons.psychology, "Avg Conc.", "$_overallAverageConcentration%")),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(child: _buildStatCard(Icons.calendar_month, "Sessions", "$_totalSessionsCount")),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: _improvementPercentage >= 0 ? kSuccessGreen.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: _improvementPercentage >= 0 ? kSuccessGreen.withOpacity(0.3) : Colors.red.withOpacity(0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      _improvementPercentage >= 0 ? Icons.trending_up : Icons.trending_down,
+                      color: _improvementPercentage >= 0 ? kSuccessGreen : Colors.red,
+                      size: 28,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      "Trend",
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "${_improvementPercentage >= 0 ? '+' : ''}$_improvementPercentage%",
+                      style: TextStyle(
+                        color: _improvementPercentage >= 0 ? kSuccessGreen : Colors.red,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard(IconData icon, String title, String value) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: kPrimaryPurple, size: 28),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              color: kTextDark,
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
+          ),
+        ],
       ),
     );
   }
