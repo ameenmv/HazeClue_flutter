@@ -79,11 +79,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
         elevation: 0,
         centerTitle: true,
       ),
-      body: _buildBody(textColor),
+      body: _buildBody(context, textColor),
     );
   }
 
-  Widget _buildBody(Color textColor) {
+  Widget _buildBody(BuildContext context, Color textColor) {
     if (_isLoading) {
       return Center(child: CircularProgressIndicator(color: textColor));
     }
@@ -117,7 +117,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          _buildWeeklyStatsCard(textColor),
+          _buildWeeklyStatsCard(context, textColor),
           const SizedBox(height: 32),
           Text(
             "Months Focus Details",
@@ -128,7 +128,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          _buildMonthlyGraph(textColor),
+          _buildMonthlyGraph(context, textColor),
           const SizedBox(height: 100), // padding for bottom nav
         ],
       ),
@@ -257,7 +257,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
     );
   }
 
-  Widget _buildWeeklyStatsCard(Color textColor) {
+  Widget _buildWeeklyStatsCard(BuildContext context, Color textColor) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -295,6 +296,19 @@ class _InsightsScreenState extends State<InsightsScreen> {
             padding: const EdgeInsets.only(top: 24, right: 24, left: 12, bottom: 12),
             child: LineChart(
               LineChartData(
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (touchedSpot) => isLight ? Colors.black87 : Colors.white.withOpacity(0.9),
+                    getTooltipItems: (touchedSpots) {
+                      return touchedSpots.map((touchedSpot) {
+                        return LineTooltipItem(
+                          '${touchedSpot.y.toInt()} mins',
+                          TextStyle(color: isLight ? Colors.white : Colors.black, fontWeight: FontWeight.bold),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
@@ -360,7 +374,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
     );
   }
 
-  Widget _buildMonthlyGraph(Color textColor) {
+  Widget _buildMonthlyGraph(BuildContext context, Color textColor) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return GlassCard(
       child: Container(
         height: 220,
@@ -368,6 +383,17 @@ class _InsightsScreenState extends State<InsightsScreen> {
         padding: const EdgeInsets.only(top: 24, right: 24, left: 12, bottom: 12),
         child: BarChart(
           BarChartData(
+            barTouchData: BarTouchData(
+              touchTooltipData: BarTouchTooltipData(
+                getTooltipColor: (group) => isLight ? Colors.black87 : Colors.white.withOpacity(0.9),
+                getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                  return BarTooltipItem(
+                    '${rod.toY.toInt()} mins',
+                    TextStyle(color: isLight ? Colors.white : Colors.black, fontWeight: FontWeight.bold),
+                  );
+                },
+              ),
+            ),
             gridData: FlGridData(
               show: true,
               drawVerticalLine: false,
