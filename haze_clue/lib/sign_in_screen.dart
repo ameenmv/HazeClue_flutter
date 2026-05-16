@@ -80,6 +80,9 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: AnimatedBackground(
@@ -102,7 +105,7 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
+                              color: isLight ? Colors.white.withOpacity(0.5) : Colors.white.withOpacity(0.1),
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
@@ -111,22 +114,22 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                                 )
                               ]
                             ),
-                            child: const Icon(Icons.psychology, size: 64, color: Colors.white),
+                            child: Icon(Icons.psychology, size: 64, color: textColor),
                           ),
                           const SizedBox(height: 24),
-                          const Text(
+                          Text(
                             "Welcome Back",
                             style: TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: textColor,
                               letterSpacing: 1.2,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             "Log in to continue your journey",
-                            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+                            style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 14),
                           ),
                           const SizedBox(height: 40),
                           
@@ -162,8 +165,8 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                                         () => _isRememberMeChecked = value ?? false,
                                       ),
                                       activeColor: const Color(0xFF6366F1),
-                                      checkColor: Colors.white,
-                                      side: BorderSide(color: Colors.white.withOpacity(0.5)),
+                                      checkColor: Theme.of(context).colorScheme.surface,
+                                      side: BorderSide(color: textColor.withOpacity(0.5)),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(4),
                                       ),
@@ -173,7 +176,7 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                                   Text(
                                     "Remember me",
                                     style: TextStyle(
-                                      color: Colors.white.withOpacity(0.9),
+                                      color: textColor.withOpacity(0.9),
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -200,18 +203,18 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                           
                           // Sign In Button
                           _isLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
+                              ? CircularProgressIndicator(color: textColor)
                               : GlassButton(text: "Sign In", onPressed: _handleSignIn),
                           
                           const SizedBox(height: 30),
                           Row(
                             children: [
-                              Expanded(child: Divider(color: Colors.white.withOpacity(0.2))),
+                              Expanded(child: Divider(color: textColor.withOpacity(0.2))),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text("Or sign in with", style: TextStyle(color: Colors.white.withOpacity(0.5))),
+                                child: Text("Or sign in with", style: TextStyle(color: textColor.withOpacity(0.5))),
                               ),
-                              Expanded(child: Divider(color: Colors.white.withOpacity(0.2))),
+                              Expanded(child: Divider(color: textColor.withOpacity(0.2))),
                             ],
                           ),
                           const SizedBox(height: 24),
@@ -220,11 +223,11 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              _buildGlassSocial(Icons.facebook, Colors.blueAccent),
+                              _buildGlassSocial(Icons.facebook, Colors.blueAccent, textColor),
                               const SizedBox(width: 20),
-                              _buildGlassSocial(Icons.g_mobiledata, Colors.redAccent),
+                              _buildGlassSocial(Icons.g_mobiledata, Colors.redAccent, textColor),
                               const SizedBox(width: 20),
-                              _buildGlassSocial(Icons.apple, Colors.white),
+                              _buildGlassSocial(Icons.apple, textColor, textColor),
                             ],
                           ),
                           const SizedBox(height: 40),
@@ -235,7 +238,7 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                             children: [
                               Text(
                                 "Don't have an account? ",
-                                style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                                style: TextStyle(color: textColor.withOpacity(0.7)),
                               ),
                               GestureDetector(
                                 onTap: () => Navigator.push(
@@ -265,13 +268,13 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildGlassSocial(IconData icon, Color color) {
+  Widget _buildGlassSocial(IconData icon, Color color, Color textColor) {
     return Container(
       width: 50,
       height: 50,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        color: textColor.withOpacity(0.05),
+        border: Border.all(color: textColor.withOpacity(0.1)),
         shape: BoxShape.circle,
       ),
       child: Center(child: Icon(icon, color: color, size: 28)),

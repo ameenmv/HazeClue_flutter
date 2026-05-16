@@ -66,24 +66,26 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
     return Scaffold(
       backgroundColor: Colors.transparent, // Let AnimatedBackground show through
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "Insights",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
       ),
-      body: _buildBody(),
+      body: _buildBody(textColor),
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(Color textColor) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(color: Colors.white));
+      return Center(child: CircularProgressIndicator(color: textColor));
     }
 
     if (_errorMessage.isNotEmpty) {
@@ -96,7 +98,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     }
 
     if (_totalFocusSeconds == 0) {
-      return _buildEmptyState();
+      return _buildEmptyState(textColor);
     }
 
     return SingleChildScrollView(
@@ -104,36 +106,36 @@ class _InsightsScreenState extends State<InsightsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeroStats(),
+          _buildHeroStats(textColor),
           const SizedBox(height: 32),
-          const Text(
+          Text(
             "Weekly Focus Details",
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: textColor,
             ),
           ),
           const SizedBox(height: 16),
-          _buildWeeklyStatsCard(),
+          _buildWeeklyStatsCard(textColor),
           const SizedBox(height: 32),
-          const Text(
+          Text(
             "Months Focus Details",
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: textColor,
             ),
           ),
           const SizedBox(height: 16),
-          _buildMonthlyGraph(),
+          _buildMonthlyGraph(textColor),
           const SizedBox(height: 100), // padding for bottom nav
         ],
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(Color textColor) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -147,25 +149,25 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: textColor.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.insert_chart_outlined, size: 60, color: Colors.white),
+                  child: Icon(Icons.insert_chart_outlined, size: 60, color: textColor),
                 ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   "No Sessions Yet",
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: textColor,
                   ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   "Start your first session to see your insights and track your progress over time!",
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 15, color: Colors.white.withOpacity(0.7), height: 1.5),
+                  style: TextStyle(fontSize: 15, color: textColor.withOpacity(0.7), height: 1.5),
                 ),
               ],
             ),
@@ -175,20 +177,20 @@ class _InsightsScreenState extends State<InsightsScreen> {
     );
   }
 
-  Widget _buildHeroStats() {
+  Widget _buildHeroStats(Color textColor) {
     return Column(
       children: [
         Row(
           children: [
-            Expanded(child: _buildStatCard(Icons.timer, "Total Time", _formatDuration(_totalFocusSeconds))),
+            Expanded(child: _buildStatCard(Icons.timer, "Total Time", _formatDuration(_totalFocusSeconds), textColor)),
             const SizedBox(width: 16),
-            Expanded(child: _buildStatCard(Icons.psychology, "Avg Conc.", "$_overallAverageConcentration%")),
+            Expanded(child: _buildStatCard(Icons.psychology, "Avg Conc.", "$_overallAverageConcentration%", textColor)),
           ],
         ),
         const SizedBox(height: 16),
         Row(
           children: [
-            Expanded(child: _buildStatCard(Icons.calendar_month, "Sessions", "$_totalSessionsCount")),
+            Expanded(child: _buildStatCard(Icons.calendar_month, "Sessions", "$_totalSessionsCount", textColor)),
             const SizedBox(width: 16),
             Expanded(
               child: GlassCard(
@@ -205,7 +207,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                       const SizedBox(height: 12),
                       Text(
                         "Trend",
-                        style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13),
+                        style: TextStyle(color: textColor.withOpacity(0.6), fontSize: 13),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -227,7 +229,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     );
   }
 
-  Widget _buildStatCard(IconData icon, String title, String value) {
+  Widget _buildStatCard(IconData icon, String title, String value, Color textColor) {
     return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -238,13 +240,13 @@ class _InsightsScreenState extends State<InsightsScreen> {
             const SizedBox(height: 12),
             Text(
               title,
-              style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13),
+              style: TextStyle(color: textColor.withOpacity(0.6), fontSize: 13),
             ),
             const SizedBox(height: 4),
             Text(
               value,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: textColor,
                 fontWeight: FontWeight.bold,
                 fontSize: 22,
               ),
@@ -255,13 +257,13 @@ class _InsightsScreenState extends State<InsightsScreen> {
     );
   }
 
-  Widget _buildWeeklyStatsCard() {
+  Widget _buildWeeklyStatsCard(Color textColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           "Total Focus Duration",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
         ),
         const SizedBox(height: 8),
         Row(
@@ -279,7 +281,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
             const SizedBox(width: 8),
             Text(
               "${_formatDuration(_averageMinutesPerDay * 60)} Avg per Day", 
-              style: TextStyle(color: Colors.white.withOpacity(0.6))
+              style: TextStyle(color: textColor.withOpacity(0.6))
             ),
           ],
         ),
@@ -297,7 +299,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   show: true,
                   drawVerticalLine: false,
                   getDrawingHorizontalLine: (value) => FlLine(
-                    color: Colors.white.withOpacity(0.1),
+                    color: textColor.withOpacity(0.1),
                     strokeWidth: 1,
                   ),
                 ),
@@ -315,7 +317,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                         if (value.toInt() >= 0 && value.toInt() < days.length) {
                           return Padding(
                             padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(days[value.toInt()], style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 10)),
+                            child: Text(days[value.toInt()], style: TextStyle(color: textColor.withOpacity(0.6), fontSize: 10)),
                           );
                         }
                         return const Text('');
@@ -328,7 +330,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                       interval: 30, // assuming 30 min intervals
                       reservedSize: 32,
                       getTitlesWidget: (value, meta) {
-                        return Text('${value.toInt()}m', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 10));
+                        return Text('${value.toInt()}m', style: TextStyle(color: textColor.withOpacity(0.6), fontSize: 10));
                       },
                     ),
                   ),
@@ -358,7 +360,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     );
   }
 
-  Widget _buildMonthlyGraph() {
+  Widget _buildMonthlyGraph(Color textColor) {
     return GlassCard(
       child: Container(
         height: 220,
@@ -370,7 +372,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
               show: true,
               drawVerticalLine: false,
               getDrawingHorizontalLine: (value) => FlLine(
-                color: Colors.white.withOpacity(0.1),
+                color: textColor.withOpacity(0.1),
                 strokeWidth: 1,
               ),
             ),
@@ -386,7 +388,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                     if (value.toInt() >= 0 && value.toInt() < months.length) {
                       return Padding(
                         padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(months[value.toInt()], style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 10)),
+                        child: Text(months[value.toInt()], style: TextStyle(color: textColor.withOpacity(0.6), fontSize: 10)),
                       );
                     }
                     return const Text('');
@@ -399,7 +401,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   reservedSize: 32,
                   interval: 60,
                   getTitlesWidget: (value, meta) {
-                    return Text('${value.toInt()}m', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 10));
+                    return Text('${value.toInt()}m', style: TextStyle(color: textColor.withOpacity(0.6), fontSize: 10));
                   },
                 ),
               ),

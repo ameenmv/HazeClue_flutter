@@ -77,10 +77,13 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        leading: const BackButton(color: Colors.white),
+        leading: BackButton(color: textColor),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -100,12 +103,12 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Text(
+                          Text(
                             "Sign Up",
                             style: TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: textColor,
                               letterSpacing: 1.2,
                             ),
                           ),
@@ -113,7 +116,7 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                           Text(
                             "Create an account to start your journey",
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+                            style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 14),
                           ),
                           const SizedBox(height: 40),
                           
@@ -149,18 +152,18 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                           const SizedBox(height: 40),
                           
                           _isLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
+                              ? CircularProgressIndicator(color: textColor)
                               : GlassButton(text: "Sign Up", onPressed: _handleSignUp),
                           
                           const SizedBox(height: 30),
                           Row(
                             children: [
-                              Expanded(child: Divider(color: Colors.white.withOpacity(0.2))),
+                              Expanded(child: Divider(color: textColor.withOpacity(0.2))),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text("Or sign up with", style: TextStyle(color: Colors.white.withOpacity(0.5))),
+                                child: Text("Or sign up with", style: TextStyle(color: textColor.withOpacity(0.5))),
                               ),
-                              Expanded(child: Divider(color: Colors.white.withOpacity(0.2))),
+                              Expanded(child: Divider(color: textColor.withOpacity(0.2))),
                             ],
                           ),
                           const SizedBox(height: 24),
@@ -168,11 +171,11 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              _buildGlassSocial(Icons.facebook, Colors.blueAccent),
+                              _buildGlassSocial(Icons.facebook, Colors.blueAccent, textColor, isLight),
                               const SizedBox(width: 20),
-                              _buildGlassSocial(Icons.g_mobiledata, Colors.redAccent),
+                              _buildGlassSocial(Icons.g_mobiledata, Colors.redAccent, textColor, isLight),
                               const SizedBox(width: 20),
-                              _buildGlassSocial(Icons.apple, Colors.white),
+                              _buildGlassSocial(Icons.apple, textColor, textColor, isLight),
                             ],
                           ),
                           const SizedBox(height: 20),
@@ -189,13 +192,13 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildGlassSocial(IconData icon, Color color) {
+  Widget _buildGlassSocial(IconData icon, Color color, Color textColor, bool isLight) {
     return Container(
       width: 50,
       height: 50,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        color: isLight ? Colors.white.withOpacity(0.5) : Colors.white.withOpacity(0.05),
+        border: Border.all(color: textColor.withOpacity(0.1)),
         shape: BoxShape.circle,
       ),
       child: Center(child: Icon(icon, color: color, size: 28)),

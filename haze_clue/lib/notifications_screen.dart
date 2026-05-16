@@ -95,6 +95,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -102,13 +104,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "Notifications",
           style: TextStyle(
-            color: Colors.white,
+            color: textColor,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
@@ -117,19 +119,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       body: AnimatedBackground(
         child: SafeArea(
           child: _isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.white))
+              ? Center(child: CircularProgressIndicator(color: textColor))
               : SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // --- Common Section ---
-                      const Text(
+                      Text(
                         "Common",
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: textColor,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -141,18 +143,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               _buildSwitchTile(
                                 title: "General Notification",
                                 value: _generalNotification,
+                                textColor: textColor,
                                 onChanged: (val) => _updateSetting('generalNotification', val),
                               ),
-                              _buildDivider(),
+                              _buildDivider(textColor),
                               _buildSwitchTile(
                                 title: "Sound",
                                 value: _sound,
+                                textColor: textColor,
                                 onChanged: (val) => _updateSetting('sound', val),
                               ),
-                              _buildDivider(),
+                              _buildDivider(textColor),
                               _buildSwitchTile(
                                 title: "Vibrate",
                                 value: _vibrate,
+                                textColor: textColor,
                                 onChanged: (val) => _updateSetting('vibrate', val),
                               ),
                             ],
@@ -162,12 +167,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       const SizedBox(height: 32),
 
                       // --- System & services update Section ---
-                      const Text(
+                      Text(
                         "System & services update",
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: textColor,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -179,12 +184,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               _buildSwitchTile(
                                 title: "App updates",
                                 value: _appUpdates,
+                                textColor: textColor,
                                 onChanged: (val) => _updateSetting('appUpdates', val),
                               ),
-                              _buildDivider(),
+                              _buildDivider(textColor),
                               _buildSwitchTile(
                                 title: "Service alerts",
                                 value: _otherUpdates,
+                                textColor: textColor,
                                 onChanged: (val) => _updateSetting('serviceAlerts', val),
                               ),
                             ],
@@ -194,12 +201,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       const SizedBox(height: 32),
 
                       // --- Others Section ---
-                      const Text(
+                      Text(
                         "Others",
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: textColor,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -211,12 +218,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               _buildSwitchTile(
                                 title: "New Service Available",
                                 value: _newServiceAvailable,
+                                textColor: textColor,
                                 onChanged: (val) => _updateSetting('newServiceAvailable', val),
                               ),
-                              _buildDivider(),
+                              _buildDivider(textColor),
                               _buildSwitchTile(
                                 title: "New Tips Available",
                                 value: _newTipsAvailable,
+                                textColor: textColor,
                                 onChanged: (val) => _updateSetting('newTipsAvailable', val),
                               ),
                             ],
@@ -234,6 +243,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget _buildSwitchTile({
     required String title,
     required bool value,
+    required Color textColor,
     required ValueChanged<bool> onChanged,
   }) {
     return Padding(
@@ -244,18 +254,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
-                color: Colors.white,
+                color: textColor,
               ),
             ),
           ),
           CupertinoSwitch(
             value: value,
             activeColor: const Color(0xFF8B5CF6),
-            thumbColor: Colors.white,
-            trackColor: Colors.white.withOpacity(0.2),
+            thumbColor: textColor,
+            trackColor: textColor.withOpacity(0.2),
             onChanged: onChanged,
           ),
         ],
@@ -263,11 +273,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  Widget _buildDivider() {
+  Widget _buildDivider(Color textColor) {
     return Divider(
       height: 24,
       thickness: 1,
-      color: Colors.white.withOpacity(0.1),
+      color: textColor.withOpacity(0.1),
     );
   }
 }

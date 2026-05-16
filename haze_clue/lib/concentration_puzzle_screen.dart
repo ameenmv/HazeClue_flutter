@@ -71,8 +71,8 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E2C),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text("Time's Up!", style: TextStyle(color: Colors.white)),
-        content: Text("Your Focus Score is $_score\nAccuracy: ${(_accuracy * 100).toInt()}%", style: const TextStyle(color: Colors.white70)),
+        title: Text("Time's Up!", style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+        content: Text("Your Focus Score is $_score\nAccuracy: ${(_accuracy * 100).toInt()}%", style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))),
         actions: [
           TextButton(
             onPressed: () {
@@ -124,6 +124,8 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -131,13 +133,13 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "Concentration Puzzle",
           style: TextStyle(
-            color: Colors.white,
+            color: textColor,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
@@ -165,7 +167,7 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                                 Text(
                                   "Focus Score",
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.6),
+                                    color: textColor.withOpacity(0.6),
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14,
                                   ),
@@ -186,7 +188,7 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                                 Text(
                                   "Time Left",
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.6),
+                                    color: textColor.withOpacity(0.6),
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14,
                                   ),
@@ -220,7 +222,8 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                                   onTap: () => _onGridTapped(index),
                                   child: _buildGridItem("${index + 1}", 
                                       isDark: index % 2 != 0, 
-                                      isActive: index == _activeTargetIndex),
+                                      isActive: index == _activeTargetIndex,
+                                      textColor: textColor),
                                 );
                               }),
                             ),
@@ -242,9 +245,9 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                                       )
                                     ],
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.adjust,
-                                    color: Colors.white,
+                                    color: textColor,
                                     size: 24,
                                   ),
                                 ),
@@ -265,15 +268,15 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                       children: [
                         Text(
                           "Current Combo",
-                          style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+                          style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 14),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           "${_combo}x",
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
-                            color: Colors.white,
+                            color: textColor,
                           ),
                         ),
                       ],
@@ -281,21 +284,21 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                     Container(
                       height: 40,
                       width: 1,
-                      color: Colors.white.withOpacity(0.2),
+                      color: textColor.withOpacity(0.2),
                     ),
                     Column(
                       children: [
                         Text(
                           "Accuracy",
-                          style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+                          style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 14),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           "${(_accuracy * 100).toInt()}%",
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
-                            color: Colors.white,
+                            color: textColor,
                           ),
                         ),
                       ],
@@ -312,21 +315,21 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                       children: [
                         const Icon(Icons.headphones, color: Color(0xFF8B5CF6)),
                         const SizedBox(width: 12),
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             "Binaural Beats",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
-                              color: Colors.white,
+                              color: textColor,
                             ),
                           ),
                         ),
                         CupertinoSwitch(
                           value: _binauralBeatsEnabled,
                           activeColor: const Color(0xFF8B5CF6),
-                          thumbColor: Colors.white,
-                          trackColor: Colors.white.withOpacity(0.2),
+                          thumbColor: textColor,
+                          trackColor: textColor.withOpacity(0.2),
                           onChanged: (val) {
                             setState(() {
                               _binauralBeatsEnabled = val;
@@ -351,12 +354,12 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                             const Icon(Icons.lightbulb_outline,
                                 color: Color(0xFF8B5CF6), size: 20),
                             const SizedBox(width: 8),
-                            const Text(
+                            Text(
                               "AI Tips",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
-                                color: Colors.white,
+                                color: textColor,
                               ),
                             ),
                           ],
@@ -365,7 +368,7 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                         Text(
                           "Maintain consistent tapping rhythm for higher accuracy bonuses. Deep breaths help!",
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
+                            color: textColor.withOpacity(0.8),
                             height: 1.4,
                             fontSize: 14,
                           ),
@@ -391,7 +394,7 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
     );
   }
 
-  Widget _buildGridItem(String number, {required bool isDark, required bool isActive}) {
+  Widget _buildGridItem(String number, {required bool isDark, required bool isActive, required Color textColor}) {
     Color bgColor = isActive 
         ? Colors.orangeAccent // Active target color
         : (isDark ? const Color(0xFF8B5CF6).withOpacity(0.5) : const Color(0xFF8B5CF6).withOpacity(0.8));
@@ -401,7 +404,7 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(isActive ? 0.8 : 0.2)),
+        border: Border.all(color: textColor.withOpacity(isActive ? 0.8 : 0.2)),
         boxShadow: isActive ? [
           BoxShadow(
             color: Colors.orangeAccent.withOpacity(0.5),
@@ -413,8 +416,8 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
       alignment: Alignment.center,
       child: Text(
         number,
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: textColor,
           fontSize: 24,
           fontWeight: FontWeight.bold,
         ),

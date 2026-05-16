@@ -101,8 +101,8 @@ class _MemoryTrainingScreenState extends State<MemoryTrainingScreen> {
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E2C),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text("Training Complete!", style: TextStyle(color: Colors.white)),
-        content: Text("You found all matches in $_moves moves.\nGreat job exercising your memory!", style: const TextStyle(color: Colors.white70)),
+        title: Text("Training Complete!", style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+        content: Text("You found all matches in $_moves moves.\nGreat job exercising your memory!", style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))),
         actions: [
           TextButton(
             onPressed: () {
@@ -118,7 +118,7 @@ class _MemoryTrainingScreenState extends State<MemoryTrainingScreen> {
               Navigator.pop(context); // Close dialog
               Navigator.pop(context); // Go back to training screen
             },
-            child: Text("Exit", style: TextStyle(color: Colors.white.withOpacity(0.5))),
+            child: Text("Exit", style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5))),
           ),
         ],
       ),
@@ -127,6 +127,9 @@ class _MemoryTrainingScreenState extends State<MemoryTrainingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -134,13 +137,13 @@ class _MemoryTrainingScreenState extends State<MemoryTrainingScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "Memory Training",
           style: TextStyle(
-            color: Colors.white,
+            color: textColor,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -162,7 +165,7 @@ class _MemoryTrainingScreenState extends State<MemoryTrainingScreen> {
                           children: [
                             Text(
                               "Moves",
-                              style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.6)),
+                              style: TextStyle(fontSize: 14, color: textColor.withOpacity(0.6)),
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -177,13 +180,13 @@ class _MemoryTrainingScreenState extends State<MemoryTrainingScreen> {
                         Container(
                           width: 1,
                           height: 40,
-                          color: Colors.white.withOpacity(0.2),
+                          color: textColor.withOpacity(0.2),
                         ),
                         Column(
                           children: [
                             Text(
                               "Matches",
-                              style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.6)),
+                              style: TextStyle(fontSize: 14, color: textColor.withOpacity(0.6)),
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -219,13 +222,13 @@ class _MemoryTrainingScreenState extends State<MemoryTrainingScreen> {
                           duration: const Duration(milliseconds: 300),
                           decoration: BoxDecoration(
                             color: isRevealed 
-                                ? Colors.white.withOpacity(0.2) 
+                                ? (isLight ? Colors.white.withOpacity(0.5) : Colors.white.withOpacity(0.2))
                                 : const Color(0xFF8B5CF6).withOpacity(0.8),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: isRevealed 
-                                  ? Colors.white.withOpacity(0.5) 
-                                  : Colors.white.withOpacity(0.1),
+                                  ? textColor.withOpacity(0.5) 
+                                  : textColor.withOpacity(0.1),
                               width: 1.5,
                             ),
                             boxShadow: !isRevealed ? [
@@ -241,12 +244,12 @@ class _MemoryTrainingScreenState extends State<MemoryTrainingScreen> {
                                 ? Icon(
                                     _cardIcons[index],
                                     size: 32,
-                                    color: Colors.white,
+                                    color: textColor,
                                   )
-                                : const Icon(
+                                : Icon(
                                     Icons.help_outline,
                                     size: 32,
-                                    color: Colors.white70,
+                                    color: textColor.withOpacity(0.7),
                                   ),
                           ),
                         ),

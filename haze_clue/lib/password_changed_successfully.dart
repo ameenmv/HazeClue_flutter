@@ -30,6 +30,8 @@ class _PasswordSuccessScreenState extends State<PasswordSuccessScreen> with Sing
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: AnimatedBackground(
@@ -65,12 +67,12 @@ class _PasswordSuccessScreenState extends State<PasswordSuccessScreen> with Sing
                             child: const Icon(Icons.check_circle_outline, size: 64, color: Colors.greenAccent),
                           ),
                           const SizedBox(height: 32),
-                          const Text(
+                          Text(
                             "Password Changed!",
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: textColor,
                               letterSpacing: 1.2,
                             ),
                           ),
@@ -78,7 +80,7 @@ class _PasswordSuccessScreenState extends State<PasswordSuccessScreen> with Sing
                           Text(
                             "Your password has been changed successfully.",
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16),
+                            style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 16),
                           ),
                           const SizedBox(height: 40),
                           

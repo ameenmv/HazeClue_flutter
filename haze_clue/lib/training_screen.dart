@@ -66,29 +66,32 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
     return Scaffold(
       backgroundColor: Colors.transparent, // Background transparent to let AnimatedBackground show
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           "Training & Setting",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          const Text(
+          Text(
             "Cognitive Training Modules",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
           ),
           const SizedBox(height: 16),
           _trainingItem(
             "Focus Enhancement",
             "Exercises designed to sharpen focus",
             Icons.center_focus_strong,
+            textColor,
             onTap: () {
               Navigator.push(
                 context,
@@ -100,6 +103,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
             "Memory Training",
             "Improve recall and retention",
             Icons.extension,
+            textColor,
             onTap: () {
               Navigator.push(
                 context,
@@ -109,38 +113,40 @@ class _TrainingScreenState extends State<TrainingScreen> {
           ),
 
           const SizedBox(height: 40),
-          const Text(
+          Text(
             "Binaural Beats Presets",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
           ),
           const SizedBox(height: 16),
           _audioPresetCard(
             "Alpha Wave Relaxation",
             "30 min",
             "Ideal for stress relief",
+            textColor,
           ),
           _audioPresetCard(
             "Theta Wave Meditation",
             "45 min",
             "Enhances creative thinking",
+            textColor,
           ),
 
           const SizedBox(height: 40),
-          const Text(
+          Text(
             "tDCS Settings",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
           ),
           const SizedBox(height: 16),
           _isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.white))
-              : _buildTDCSSettings(),
+              ? Center(child: CircularProgressIndicator(color: textColor))
+              : _buildTDCSSettings(textColor),
           const SizedBox(height: 100), // Padding for bottom nav
         ],
       ),
     );
   }
 
-  Widget _trainingItem(String title, String sub, IconData icon, {VoidCallback? onTap}) {
+  Widget _trainingItem(String title, String sub, IconData icon, Color textColor, {VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -153,7 +159,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: textColor.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: const Color(0xFF8B5CF6), size: 28),
@@ -165,17 +171,17 @@ class _TrainingScreenState extends State<TrainingScreen> {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16),
+                        style: TextStyle(fontWeight: FontWeight.bold, color: textColor, fontSize: 16),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         sub,
-                        style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13),
+                        style: TextStyle(color: textColor.withOpacity(0.6), fontSize: 13),
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: Colors.white.withOpacity(0.5)),
+                Icon(Icons.chevron_right, color: textColor.withOpacity(0.5)),
               ],
             ),
           ),
@@ -184,7 +190,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
     );
   }
 
-  Widget _audioPresetCard(String title, String time, String desc) {
+  Widget _audioPresetCard(String title, String time, String desc, Color textColor) {
     bool isPlaying = _currentlyPlaying == title;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -200,16 +206,16 @@ class _TrainingScreenState extends State<TrainingScreen> {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: Colors.white,
+                        color: textColor,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       desc,
-                      style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13),
+                      style: TextStyle(color: textColor.withOpacity(0.6), fontSize: 13),
                     ),
                     const SizedBox(height: 8),
                     Container(
@@ -248,7 +254,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                   ),
                   child: Icon(
                     isPlaying ? Icons.pause : Icons.play_arrow,
-                    color: Colors.white,
+                    color: Colors.white, // Keep icon white due to red/purple background
                     size: 28,
                   ),
                 ),
@@ -260,7 +266,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
     );
   }
 
-  Widget _buildTDCSSettings() {
+  Widget _buildTDCSSettings(Color textColor) {
     return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -269,9 +275,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   "Intensity Level",
-                  style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 16),
+                  style: TextStyle(fontWeight: FontWeight.w600, color: textColor, fontSize: 16),
                 ),
                 Text(
                   "${(_intensityLevel * 100).toInt()}%",
@@ -287,8 +293,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
             SliderTheme(
               data: SliderTheme.of(context).copyWith(
                 activeTrackColor: const Color(0xFF8B5CF6),
-                inactiveTrackColor: Colors.white.withOpacity(0.1),
-                thumbColor: Colors.white,
+                inactiveTrackColor: textColor.withOpacity(0.1),
+                thumbColor: textColor,
                 overlayColor: const Color(0xFF8B5CF6).withOpacity(0.2),
                 trackHeight: 6.0,
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12.0),

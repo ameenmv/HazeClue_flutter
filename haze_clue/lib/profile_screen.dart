@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'edit_profile_screen.dart';
 import 'notifications_screen.dart';
 import 'notification_inbox_screen.dart';
@@ -10,7 +11,9 @@ import 'intro_screen.dart';
 import 'glass_widgets.dart';
 import 'utils/transitions.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
+import 'main.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -41,6 +44,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     return Scaffold(
       backgroundColor: Colors.transparent, // Let AnimatedBackground show through
       body: SingleChildScrollView(
@@ -55,7 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.notifications_none, color: Colors.white),
+                      icon: Icon(Icons.notifications_none, color: textColor),
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -68,11 +74,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.history, color: Colors.white),
+                          icon: Icon(Icons.history, color: textColor),
                           onPressed: () {},
                         ),
                         IconButton(
-                          icon: const Icon(Icons.more_vert, color: Colors.white),
+                          icon: Icon(Icons.more_vert, color: textColor),
                           onPressed: () {},
                         ),
                       ],
@@ -95,7 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+                        border: Border.all(color: textColor.withOpacity(0.3), width: 2),
                         boxShadow: [
                           BoxShadow(
                             color: const Color(0xFF8B5CF6).withOpacity(0.3),
@@ -128,10 +134,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           shape: BoxShape.circle,
                           border: Border.all(color: const Color(0xFF1E1E2A), width: 2),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.edit_outlined,
                           size: 18,
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.surface,
                         ),
                       ),
                     ),
@@ -142,10 +148,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 // --- User Info ---
                 Text(
                   _profile?['fullName'] ?? "Loading...",
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: textColor,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -154,7 +160,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 15,
-                    color: Colors.white.withOpacity(0.7),
+                    color: textColor.withOpacity(0.7),
                     height: 1.4,
                   ),
                 ),
@@ -170,6 +176,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _buildMenuItem(
                           icon: Icons.badge_outlined,
                           title: "Edit profile information",
+                          textColor: textColor,
                           onTap: () async {
                             await Navigator.push(
                               context,
@@ -180,11 +187,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             _loadProfile(); // Refresh profile after editing
                           },
                         ),
-                        _buildDivider(),
+                        _buildDivider(textColor),
                         _buildMenuItem(
                           icon: Icons.notifications_none,
                           title: "Notifications",
                           trailingText: "ON",
+                          textColor: textColor,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -194,11 +202,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             );
                           },
                         ),
-                        _buildDivider(),
+                        _buildDivider(textColor),
                         _buildMenuItem(
                           icon: Icons.language,
                           title: "Language",
                           trailingText: "English",
+                          textColor: textColor,
                           onTap: () {},
                         ),
                       ]),
@@ -209,6 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _buildMenuItem(
                           icon: Icons.security_outlined,
                           title: "Security",
+                          textColor: textColor,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -218,11 +228,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             );
                           },
                         ),
-                        _buildDivider(),
+                        _buildDivider(textColor),
                         _buildMenuItem(
                           icon: Icons.palette_outlined,
-                          title: "Theme",
-                          trailingText: "Dark glass",
+                          title: "Dark Mode",
+                          trailingWidget: CupertinoSwitch(
+                            value: !isLight,
+                            activeColor: const Color(0xFF8B5CF6),
+                            thumbColor: textColor,
+                            trackColor: textColor.withOpacity(0.2),
+                            onChanged: (val) async {
+                              final prefs = await SharedPreferences.getInstance();
+                              await prefs.setBool('isLightMode', !val);
+                              themeNotifier.value = !val ? ThemeMode.light : ThemeMode.dark;
+                            },
+                          ),
+                          textColor: textColor,
                           onTap: () {},
                         ),
                       ]),
@@ -233,6 +254,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _buildMenuItem(
                           icon: Icons.help_outline,
                           title: "Help & Support",
+                          textColor: textColor,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -242,10 +264,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             );
                           },
                         ),
-                        _buildDivider(),
+                        _buildDivider(textColor),
                         _buildMenuItem(
                           icon: Icons.chat_bubble_outline,
                           title: "Contact us",
+                          textColor: textColor,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -255,10 +278,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             );
                           },
                         ),
-                        _buildDivider(),
+                        _buildDivider(textColor),
                         _buildMenuItem(
                           icon: Icons.lock_outline,
                           title: "Privacy policy",
+                          textColor: textColor,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -305,11 +329,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildDivider() {
+  Widget _buildDivider(Color textColor) {
     return Divider(
       height: 1,
       thickness: 1,
-      color: Colors.white.withOpacity(0.1),
+      color: textColor.withOpacity(0.1),
       indent: 16,
       endIndent: 16,
     );
@@ -319,6 +343,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required IconData icon,
     required String title,
     String? trailingText,
+    Widget? trailingWidget,
+    required Color textColor,
     required VoidCallback onTap,
   }) {
     return InkWell(
@@ -331,23 +357,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: textColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: Colors.white, size: 22),
+              child: Icon(icon, color: textColor, size: 22),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  color: textColor,
                 ),
               ),
             ),
-            if (trailingText != null)
+            if (trailingWidget != null)
+              trailingWidget
+            else if (trailingText != null)
               Text(
                 trailingText,
                 style: const TextStyle(
@@ -357,7 +385,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               )
             else
-              Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white.withOpacity(0.4)),
+              Icon(Icons.arrow_forward_ios, size: 14, color: textColor.withOpacity(0.4)),
           ],
         ),
       ),

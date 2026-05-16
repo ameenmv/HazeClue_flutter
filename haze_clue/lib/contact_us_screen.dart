@@ -32,6 +32,8 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -39,13 +41,13 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "Contact Us",
           style: TextStyle(
-            color: Colors.white,
+            color: textColor,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
@@ -64,13 +66,13 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Center(
+                        Center(
                           child: Text(
                             "Send us a message",
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: textColor,
                             ),
                           ),
                         ),
@@ -96,7 +98,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
 
                 // --- Send Message Button ---
                 _isLoading 
-                  ? const Center(child: CircularProgressIndicator(color: Colors.white)) 
+                  ? Center(child: CircularProgressIndicator(color: textColor)) 
                   : GlassButton(
                       text: "Send Message",
                       onPressed: _submitTicket,
@@ -110,12 +112,12 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           "Reach Out Directly",
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: textColor,
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -124,7 +126,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.1),
+                                color: textColor.withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(Icons.mail_outline, color: Color(0xFF8B5CF6), size: 20),
@@ -132,9 +134,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                             const SizedBox(width: 16),
                             Expanded(
                               child: RichText(
-                                text: const TextSpan(
-                                  style: TextStyle(color: Colors.white, fontSize: 14),
-                                  children: [
+                                text: TextSpan(
+                                  style: TextStyle(color: textColor, fontSize: 14),
+                                  children: const [
                                     TextSpan(
                                       text: "Email: ",
                                       style: TextStyle(fontWeight: FontWeight.w600),
@@ -157,7 +159,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.1),
+                                color: textColor.withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(Icons.access_time, color: Color(0xFF8B5CF6), size: 20),
@@ -165,9 +167,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                             const SizedBox(width: 16),
                             Expanded(
                               child: RichText(
-                                text: const TextSpan(
-                                  style: TextStyle(color: Colors.white, fontSize: 14),
-                                  children: [
+                                text: TextSpan(
+                                  style: TextStyle(color: textColor, fontSize: 14),
+                                  children: const [
                                     TextSpan(
                                       text: "Hours:  ",
                                       style: TextStyle(fontWeight: FontWeight.w600),

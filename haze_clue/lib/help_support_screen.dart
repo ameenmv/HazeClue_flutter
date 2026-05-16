@@ -13,6 +13,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -20,13 +22,13 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "Help & Support",
           style: TextStyle(
-            color: Colors.white,
+            color: textColor,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
@@ -49,12 +51,12 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                 const SizedBox(height: 32),
 
                 // Title
-                const Text(
+                Text(
                   "Frequently Asked Questions",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: textColor,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -69,39 +71,46 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                           title: "General Queries",
                           count: "3",
                           initiallyExpanded: true,
+                          textColor: textColor,
                           children: [
                             _buildFAQItem(
                               question: "How do I get started with the EEG App?",
                               answer:
                                   "Download the app from your respective app store, create an account, and follow the on-screen setup instructions to pair your device.",
+                              textColor: textColor,
                             ),
                             _buildFAQItem(
                               question: "What devices are compatible with the app?",
                               answer:
                                   "The EEG App is compatible with all major iOS and Android smartphones and tablets running version 12.0 or higher for iOS, and 8.0 or higher for Android. Specific hardware models are listed in the app's settings.",
+                              textColor: textColor,
                             ),
                             _buildFAQItem(
                               question: "Is my data secure?",
                               answer:
                                   "Yes, we use industry-standard encryption and security protocols to protect your personal and health data. For more details, please refer to our privacy policy.",
+                              textColor: textColor,
                             ),
                           ],
                         ),
-                        _buildDivider(),
+                        _buildDivider(textColor),
                         _buildFAQCategory(
                           title: "Technical Support",
                           count: "2",
                           initiallyExpanded: false,
+                          textColor: textColor,
                           children: [
                             _buildFAQItem(
                               question: "How do I reset my headset?",
                               answer:
                                   "Press and hold the power button for 10 seconds until the LED light flashes red and blue.",
+                              textColor: textColor,
                             ),
                             _buildFAQItem(
                               question: "App is crashing constantly",
                               answer:
                                   "Please ensure you have the latest version installed. If the problem persists, try reinstalling the app.",
+                              textColor: textColor,
                             ),
                           ],
                         ),
@@ -121,14 +130,15 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     required String title,
     required String count,
     required bool initiallyExpanded,
+    required Color textColor,
     required List<Widget> children,
   }) {
     return Theme(
       data: Theme.of(context).copyWith(
         dividerColor: Colors.transparent, // Remove borders
-        unselectedWidgetColor: Colors.white.withOpacity(0.5),
-        colorScheme: const ColorScheme.dark(
-          primary: Colors.white,
+        unselectedWidgetColor: textColor.withOpacity(0.5),
+        colorScheme: ColorScheme.dark(
+          primary: textColor,
         ),
       ),
       child: ExpansionTile(
@@ -139,10 +149,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: textColor,
                 ),
               ),
             ),
@@ -163,15 +173,15 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
             ),
           ],
         ),
-        iconColor: Colors.white,
-        collapsedIconColor: Colors.white.withOpacity(0.5),
+        iconColor: textColor,
+        collapsedIconColor: textColor.withOpacity(0.5),
         childrenPadding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
         children: children,
       ),
     );
   }
 
-  Widget _buildFAQItem({required String question, required String answer}) {
+  Widget _buildFAQItem({required String question, required String answer, required Color textColor}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Column(
@@ -185,10 +195,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
               Expanded(
                 child: Text(
                   question,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: textColor,
                   ),
                 ),
               ),
@@ -201,7 +211,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
               answer,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.white.withOpacity(0.7),
+                color: textColor.withOpacity(0.7),
                 height: 1.5,
               ),
             ),
@@ -211,11 +221,11 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     );
   }
 
-  Widget _buildDivider() {
+  Widget _buildDivider(Color textColor) {
     return Divider(
       height: 1,
       thickness: 1,
-      color: Colors.white.withOpacity(0.1),
+      color: textColor.withOpacity(0.1),
       indent: 16,
       endIndent: 16,
     );

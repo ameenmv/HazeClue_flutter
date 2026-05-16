@@ -35,6 +35,9 @@ class _DashboardContentState extends State<DashboardContent> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     return Scaffold(
       backgroundColor: Colors.transparent, // Background transparent to let AnimatedBackground show
       appBar: AppBar(
@@ -46,21 +49,21 @@ class _DashboardContentState extends State<DashboardContent> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: isLight ? Colors.white.withOpacity(0.5) : Colors.white.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.psychology,
-                color: Colors.white,
+                color: textColor,
                 size: 28,
               ),
             ),
             const SizedBox(width: 12),
-            const Text(
+            Text(
               "HazeClue",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: textColor,
                 fontSize: 20,
               ),
             ),
@@ -75,9 +78,9 @@ class _DashboardContentState extends State<DashboardContent> {
                 unreadCount = snapshot.data!.where((n) => n['isRead'] == false).length;
               }
 
-              Widget icon = const Icon(
+              Widget icon = Icon(
                 Icons.notifications_none_outlined,
-                color: Colors.white,
+                color: textColor,
                 size: 28,
               );
 
@@ -94,7 +97,7 @@ class _DashboardContentState extends State<DashboardContent> {
                         decoration: BoxDecoration(
                           color: Colors.redAccent,
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFF1E1E2A), width: 1.5),
+                          border: Border.all(color: Theme.of(context).colorScheme.surface, width: 1.5),
                         ),
                         child: Text(
                           unreadCount > 9 ? '+9' : unreadCount.toString(),
@@ -146,14 +149,14 @@ class _DashboardContentState extends State<DashboardContent> {
                 future: _statsFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const SizedBox(
+                    return SizedBox(
                       height: 250,
-                      child: Center(child: CircularProgressIndicator(color: Colors.white)),
+                      child: Center(child: CircularProgressIndicator(color: textColor)),
                     );
                   } else if (snapshot.hasError) {
-                    return const SizedBox(
+                    return SizedBox(
                       height: 250,
-                      child: Center(child: Text("Failed to load stats", style: TextStyle(color: Colors.white))),
+                      child: Center(child: Text("Failed to load stats", style: TextStyle(color: textColor))),
                     );
                   }
                   
@@ -161,35 +164,35 @@ class _DashboardContentState extends State<DashboardContent> {
                   final focusPercentage = (stats['avgAttention'] ?? 100) / 100.0;
                   final focusLabel = '${(focusPercentage * 100).toInt()}%';
 
-                  return _buildFocusCard(focusPercentage, focusLabel);
+                  return _buildFocusCard(focusPercentage, focusLabel, textColor);
                 },
               ),
               const SizedBox(height: 40),
               
-              const Text(
+              Text(
                 "Quick Actions",
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: textColor,
                 ),
               ),
               const SizedBox(height: 16),
-              _buildQuickActions(context),
+              _buildQuickActions(context, textColor),
               
               const SizedBox(height: 40),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     "Recent Activity",
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: textColor,
                     ),
                   ),
-                  Icon(Icons.trending_up, color: Colors.white.withOpacity(0.5)),
+                  Icon(Icons.trending_up, color: textColor.withOpacity(0.5)),
                 ],
               ),
               const SizedBox(height: 16),
@@ -199,19 +202,20 @@ class _DashboardContentState extends State<DashboardContent> {
                   child: FutureBuilder<List<dynamic>>(
                     future: _sessionsFuture,
                     builder: (context, snapshot) {
+                      final textColor = Theme.of(context).colorScheme.onSurface;
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator(color: Colors.white));
+                        return Center(child: CircularProgressIndicator(color: textColor));
                       } else if (snapshot.hasError) {
-                        return const Center(child: Text("Failed to load activities", style: TextStyle(color: Colors.white)));
+                        return Center(child: Text("Failed to load activities", style: TextStyle(color: textColor)));
                       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Center(
+                        return Center(
                           child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 20),
-                            child: Text("No recent activities.", style: TextStyle(color: Colors.white70)),
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            child: Text("No recent activities.", style: TextStyle(color: textColor.withOpacity(0.7))),
                           ),
                         );
                       }
-                      return _buildActivityList(snapshot.data!);
+                      return _buildActivityList(snapshot.data!, textColor);
                     },
                   ),
                 ),
@@ -224,7 +228,7 @@ class _DashboardContentState extends State<DashboardContent> {
     );
   }
 
-  Widget _buildFocusCard(double focusPercentage, String focusLabel) {
+  Widget _buildFocusCard(double focusPercentage, String focusLabel, Color textColor) {
     return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -232,13 +236,13 @@ class _DashboardContentState extends State<DashboardContent> {
           children: [
             Align(
               alignment: Alignment.topRight,
-              child: Icon(Icons.more_horiz, color: Colors.white.withOpacity(0.5)),
+              child: Icon(Icons.more_horiz, color: textColor.withOpacity(0.5)),
             ),
-            const Text(
+            Text(
               "Current Focus",
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.white70,
+                color: textColor.withOpacity(0.7),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -261,16 +265,16 @@ class _DashboardContentState extends State<DashboardContent> {
                   children: [
                     Text(
                       focusLabel,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: textColor,
                       ),
                     ),
                     Text(
                       "Focused",
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: textColor.withOpacity(0.6),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -283,7 +287,7 @@ class _DashboardContentState extends State<DashboardContent> {
               "Your cognitive state is optimal.\nKeep it up!",
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: textColor.withOpacity(0.7),
                 fontSize: 14,
                 height: 1.5,
               ),
@@ -294,13 +298,14 @@ class _DashboardContentState extends State<DashboardContent> {
     );
   }
 
-  Widget _buildQuickActions(BuildContext context) {
+  Widget _buildQuickActions(BuildContext context, Color textColor) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _actionItem(
           Icons.bolt,
           "Connect\nDevices",
+          textColor,
           onTap: () {
             Navigator.push(
               context,
@@ -311,6 +316,7 @@ class _DashboardContentState extends State<DashboardContent> {
         _actionItem(
           Icons.psychology_outlined,
           "Training\nExercises",
+          textColor,
           onTap: () {
             Navigator.push(
               context,
@@ -321,6 +327,7 @@ class _DashboardContentState extends State<DashboardContent> {
         _actionItem(
           Icons.music_note_outlined,
           "Binaural\nBeats",
+          textColor,
           onTap: () {
             Navigator.push(
               context,
@@ -332,7 +339,7 @@ class _DashboardContentState extends State<DashboardContent> {
     );
   }
 
-  Widget _actionItem(IconData icon, String label, {VoidCallback? onTap}) {
+  Widget _actionItem(IconData icon, String label, Color textColor, {VoidCallback? onTap}) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -343,7 +350,7 @@ class _DashboardContentState extends State<DashboardContent> {
                 height: 70,
                 width: 70,
                 child: Center(
-                  child: Icon(icon, color: Colors.white, size: 30),
+                  child: Icon(icon, color: textColor, size: 30),
                 ),
               ),
             ),
@@ -351,10 +358,10 @@ class _DashboardContentState extends State<DashboardContent> {
             Text(
               label,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: textColor,
               ),
             ),
           ],
@@ -363,19 +370,20 @@ class _DashboardContentState extends State<DashboardContent> {
     );
   }
 
-  Widget _buildActivityList(List<dynamic> sessions) {
+  Widget _buildActivityList(List<dynamic> sessions, Color textColor) {
     return Column(
       children: sessions.take(3).map((session) {
         return _activityTile(
           Icons.trending_up, 
           session['title'] ?? 'Session Completed',
           session['status'] ?? 'Recently',
+          textColor,
         );
       }).toList(),
     );
   }
 
-  Widget _activityTile(IconData icon, String title, String time) {
+  Widget _activityTile(IconData icon, String title, String time, Color textColor) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -383,7 +391,7 @@ class _DashboardContentState extends State<DashboardContent> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: textColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: const Color(0xFF8B5CF6), size: 22),
@@ -395,16 +403,16 @@ class _DashboardContentState extends State<DashboardContent> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: textColor,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   time,
-                  style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.6)),
+                  style: TextStyle(fontSize: 13, color: textColor.withOpacity(0.6)),
                 ),
               ],
             ),

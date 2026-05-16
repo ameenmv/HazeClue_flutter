@@ -59,10 +59,13 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        leading: const BackButton(color: Colors.white),
+        leading: BackButton(color: textColor),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -85,18 +88,18 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> with SingleTickerPr
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
+                              color: isLight ? Colors.white.withOpacity(0.5) : Colors.white.withOpacity(0.1),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.mark_email_read_outlined, size: 48, color: Colors.white),
+                            child: Icon(Icons.mark_email_read_outlined, size: 48, color: textColor),
                           ),
                           const SizedBox(height: 24),
-                          const Text(
+                          Text(
                             "Verify Code",
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: textColor,
                               letterSpacing: 1.2,
                             ),
                           ),
@@ -104,7 +107,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> with SingleTickerPr
                           Text(
                             "Please enter the code we just sent to",
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+                            style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 14),
                           ),
                           Text(
                             widget.email,
@@ -130,13 +133,13 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> with SingleTickerPr
                           
                           Text(
                             "Didn't receive OTP?",
-                            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+                            style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 14),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
+                          Text(
                             "Resend code",
                             style: TextStyle(
-                              color: Colors.white,
+                              color: textColor,
                               fontWeight: FontWeight.w600,
                               decoration: TextDecoration.underline,
                             ),
@@ -145,7 +148,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> with SingleTickerPr
                           const SizedBox(height: 40),
                           
                           _isLoading 
-                              ? const CircularProgressIndicator(color: Colors.white)
+                              ? CircularProgressIndicator(color: textColor)
                               : GlassButton(
                                   text: "Verify",
                                   onPressed: _handleVerify,

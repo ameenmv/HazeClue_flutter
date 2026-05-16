@@ -28,7 +28,7 @@ void showGlassToast(BuildContext context, String message, {bool isError = true})
           ),
         ],
       ),
-      backgroundColor: const Color(0xFF1E1E2A).withOpacity(0.95), // Deep sleek background
+      backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.95),
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -70,10 +70,12 @@ class _AnimatedBackgroundState extends State<AnimatedBackground> with SingleTick
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    
     return Stack(
       children: [
-        // Dark premium background
-        Container(color: const Color(0xFF0F172A)),
+        // Premium background (dynamic based on theme)
+        Container(color: Theme.of(context).scaffoldBackgroundColor),
 
         // Animated glowing orbs
         AnimatedBuilder(
@@ -89,7 +91,7 @@ class _AnimatedBackgroundState extends State<AnimatedBackground> with SingleTick
                     height: 300,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFF4F46E5).withOpacity(0.15), // Indigo
+                      color: const Color(0xFF4F46E5).withOpacity(isLight ? 0.25 : 0.15), // Indigo
                     ),
                   ),
                 ),
@@ -101,7 +103,7 @@ class _AnimatedBackgroundState extends State<AnimatedBackground> with SingleTick
                     height: 350,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFF9333EA).withOpacity(0.15), // Purple
+                      color: const Color(0xFF9333EA).withOpacity(isLight ? 0.25 : 0.15), // Purple
                     ),
                   ),
                 ),
@@ -130,18 +132,22 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return ClipRRect(
       borderRadius: BorderRadius.circular(30),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: isLight ? Colors.white.withOpacity(0.6) : Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
+            border: Border.all(
+              color: isLight ? Colors.white.withOpacity(0.8) : Colors.white.withOpacity(0.2), 
+              width: 1.5
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withOpacity(isLight ? 0.05 : 0.2),
                 blurRadius: 30,
                 spreadRadius: -5,
               )
@@ -182,6 +188,12 @@ class _GlassTextFieldState extends State<GlassTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final textColor = Theme.of(context).colorScheme.onSurface;
+    final hintColor = textColor.withOpacity(0.5);
+    final borderColor = isLight ? Colors.black.withOpacity(0.1) : Colors.white.withOpacity(0.15);
+    final bgColor = isLight ? Colors.white.withOpacity(0.6) : Colors.white.withOpacity(0.08);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -189,31 +201,31 @@ class _GlassTextFieldState extends State<GlassTextField> {
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
             widget.label,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+            style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
+            color: bgColor,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.15)),
+            border: Border.all(color: borderColor),
           ),
           child: TextField(
             controller: widget.controller,
             obscureText: widget.isPassword ? _obscure : false,
             keyboardType: widget.keyboardType,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: textColor),
             decoration: InputDecoration(
               hintText: widget.hint,
-              hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+              hintStyle: TextStyle(color: hintColor),
               prefixIcon: widget.icon != null 
-                  ? Icon(widget.icon, color: Colors.white.withOpacity(0.7))
+                  ? Icon(widget.icon, color: textColor.withOpacity(0.7))
                   : null,
               suffixIcon: widget.isPassword
                   ? IconButton(
                       icon: Icon(
                         _obscure ? Icons.visibility_off : Icons.visibility,
-                        color: Colors.white.withOpacity(0.7),
+                        color: textColor.withOpacity(0.7),
                       ),
                       onPressed: () => setState(() => _obscure = !_obscure),
                     )

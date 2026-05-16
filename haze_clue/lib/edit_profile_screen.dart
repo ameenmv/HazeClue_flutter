@@ -75,6 +75,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -82,13 +84,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "Edit profile",
           style: TextStyle(
-            color: Colors.white,
+            color: textColor,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
@@ -99,7 +101,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
             child: _isLoading 
-              ? const Center(child: CircularProgressIndicator(color: Colors.white)) 
+              ? Center(child: CircularProgressIndicator(color: textColor)) 
               : GlassCard(
                   child: Padding(
                     padding: const EdgeInsets.all(24.0),

@@ -76,6 +76,8 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -83,13 +85,13 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "Account Security",
           style: TextStyle(
-            color: Colors.white,
+            color: textColor,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
@@ -103,19 +105,19 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // --- Account Management ---
-                _buildSectionTitle("Account Management"),
+                _buildSectionTitle("Account Management", textColor),
                 const SizedBox(height: 12),
                 GlassCard(
                   child: ListTile(
-                    title: const Text(
+                    title: Text(
                       "Change password",
                       style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white),
+                          color: textColor),
                     ),
                     trailing: Icon(Icons.arrow_forward_ios,
-                        size: 16, color: Colors.white.withOpacity(0.5)),
+                        size: 16, color: textColor.withOpacity(0.5)),
                     onTap: () {
                       Navigator.push(
                         context,
@@ -130,7 +132,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                 const SizedBox(height: 24),
 
                 // --- Authentication ---
-                _buildSectionTitle("Authentication"),
+                _buildSectionTitle("Authentication", textColor),
                 const SizedBox(height: 12),
                 GlassCard(
                   child: Padding(
@@ -142,12 +144,12 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 "Two-factor authentication",
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                                  color: textColor,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -155,7 +157,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                                 "Set up two-factor authentication",
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: textColor.withOpacity(0.6),
                                 ),
                               ),
                             ],
@@ -164,8 +166,8 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                         CupertinoSwitch(
                           value: _isTwoFactorEnabled,
                           activeColor: const Color(0xFF8B5CF6),
-                          thumbColor: Colors.white,
-                          trackColor: Colors.white.withOpacity(0.2),
+                          thumbColor: textColor,
+                          trackColor: textColor.withOpacity(0.2),
                           onChanged: (val) {
                             setState(() {
                               _isTwoFactorEnabled = val;
@@ -182,7 +184,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildSectionTitle("Active Sessions"),
+                    _buildSectionTitle("Active Sessions", textColor),
                     GestureDetector(
                       onTap: _revokeOtherSessions,
                       child: const Text(
@@ -198,11 +200,11 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                 ),
                 const SizedBox(height: 12),
                 _isLoadingSessions 
-                  ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                  ? Center(child: CircularProgressIndicator(color: textColor))
                   : _sessions.isEmpty
                     ? Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text("No active sessions found.", style: TextStyle(color: Colors.white.withOpacity(0.7))),
+                        child: Text("No active sessions found.", style: TextStyle(color: textColor.withOpacity(0.7))),
                       )
                     : GlassCard(
                         child: Column(
@@ -219,6 +221,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                                   location: session['location'] ?? "Unknown Location",
                                   time: "Started: ${DateTime.parse(session['loginTime']).toLocal().toString().split('.')[0]}",
                                   isCurrent: isCurrent,
+                                  textColor: textColor,
                                 ),
                                 if (index < _sessions.length - 1)
                                   Divider(color: Colors.white.withOpacity(0.1), height: 1),
@@ -230,14 +233,14 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                 const SizedBox(height: 32),
 
                 // --- Recent Security Activity ---
-                _buildSectionTitle("Recent Security Activity"),
+                _buildSectionTitle("Recent Security Activity", textColor),
                 const SizedBox(height: 12),
                 _isLoadingLogs
-                  ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                  ? Center(child: CircularProgressIndicator(color: textColor))
                   : _securityLogs.isEmpty
                     ? Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text("No recent security activity.", style: TextStyle(color: Colors.white.withOpacity(0.7))),
+                        child: Text("No recent security activity.", style: TextStyle(color: textColor.withOpacity(0.7))),
                       )
                     : GlassCard(
                         child: Column(
@@ -255,9 +258,10 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                                   icon: icon,
                                   title: event,
                                   time: DateTime.parse(log['createdAt']).toLocal().toString().split('.')[0],
+                                  textColor: textColor,
                                 ),
                                 if (index < _securityLogs.length - 1)
-                                  Divider(color: Colors.white.withOpacity(0.1), height: 1),
+                                  Divider(color: textColor.withOpacity(0.1), height: 1),
                               ],
                             );
                           }).toList(),
@@ -277,12 +281,12 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                             const Icon(Icons.lightbulb_outline,
                                 color: Color(0xFF8B5CF6), size: 24),
                             const SizedBox(width: 12),
-                            const Text(
+                            Text(
                               "Security Tip",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: textColor,
                               ),
                             ),
                           ],
@@ -292,7 +296,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                           "Regularly review your active sessions and sign out of any unfamiliar devices.",
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.white.withOpacity(0.8),
+                            color: textColor.withOpacity(0.8),
                             height: 1.4,
                           ),
                         ),
@@ -325,13 +329,13 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, Color textColor) {
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.bold,
-        color: Colors.white,
+        color: textColor,
       ),
     );
   }
@@ -342,6 +346,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
     required String location,
     required String time,
     required bool isCurrent,
+    required Color textColor,
   }) {
     return Padding(
       padding: const EdgeInsets.all(20.0),
@@ -354,10 +359,10 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
               children: [
                 Text(
                   deviceName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: textColor,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -365,7 +370,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                   location,
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.white.withOpacity(0.6),
+                    color: textColor.withOpacity(0.6),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -373,7 +378,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                   time,
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.white.withOpacity(0.6),
+                    color: textColor.withOpacity(0.6),
                   ),
                 ),
               ],
@@ -400,6 +405,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
     required IconData icon,
     required String title,
     required String time,
+    required Color textColor,
   }) {
     return Padding(
       padding: const EdgeInsets.all(20.0),
@@ -409,10 +415,10 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: textColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 20, color: Colors.white),
+            child: Icon(icon, size: 20, color: textColor),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -421,10 +427,10 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: Colors.white,
+                    color: textColor,
                     height: 1.3,
                   ),
                 ),
@@ -433,7 +439,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                   time,
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.white.withOpacity(0.6),
+                    color: textColor.withOpacity(0.6),
                   ),
                 ),
               ],
