@@ -46,6 +46,8 @@ class _IntroScreenState extends State<IntroScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: AnimatedBackground(
@@ -57,19 +59,19 @@ class _IntroScreenState extends State<IntroScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: textColor.withOpacity(0.1),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20)
                   ]
                 ),
-                child: const Icon(Icons.psychology, size: 48, color: Colors.white),
+                child: Icon(Icons.psychology, size: 48, color: textColor),
               ),
               const SizedBox(height: 10),
-              const Text(
+              Text(
                 "HAZE CLUE",
                 style: TextStyle(
-                  color: Colors.white,
+                  color: textColor,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 2,
                 ),
@@ -104,8 +106,8 @@ class _IntroScreenState extends State<IntroScreen> {
                               Text(
                                 _contents[index]['title']!,
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: textColor,
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
                                   height: 1.2,
@@ -117,7 +119,7 @@ class _IntroScreenState extends State<IntroScreen> {
                                   _contents[index]['desc']!,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.7),
+                                    color: textColor.withOpacity(0.7),
                                     fontSize: 14,
                                     height: 1.4,
                                   ),
@@ -172,6 +174,7 @@ class _IntroScreenState extends State<IntroScreen> {
   }
 
   Widget buildDot(int index, BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       height: 8,
@@ -179,7 +182,7 @@ class _IntroScreenState extends State<IntroScreen> {
       margin: const EdgeInsets.only(right: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        color: _currentIndex == index ? Colors.white : Colors.white.withOpacity(0.3),
+        color: _currentIndex == index ? textColor : textColor.withOpacity(0.3),
       ),
     );
   }

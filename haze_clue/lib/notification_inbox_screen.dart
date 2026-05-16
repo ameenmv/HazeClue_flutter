@@ -20,6 +20,8 @@ class _NotificationInboxScreenState extends State<NotificationInboxScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -27,13 +29,13 @@ class _NotificationInboxScreenState extends State<NotificationInboxScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "Notifications",
           style: TextStyle(
-            color: Colors.white,
+            color: textColor,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
@@ -56,7 +58,7 @@ class _NotificationInboxScreenState extends State<NotificationInboxScreen> {
             future: _notificationsFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator(color: Colors.white));
+                return Center(child: CircularProgressIndicator(color: textColor));
               } else if (snapshot.hasError) {
                 return Center(child: Text("Error: ${snapshot.error}", style: const TextStyle(color: Colors.redAccent), textAlign: TextAlign.center));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -64,9 +66,9 @@ class _NotificationInboxScreenState extends State<NotificationInboxScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.notifications_off_outlined, size: 60, color: Colors.white.withOpacity(0.5)),
+                      Icon(Icons.notifications_off_outlined, size: 60, color: textColor.withOpacity(0.5)),
                       const SizedBox(height: 16),
-                      Text("No notifications found.", style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16)),
+                      Text("No notifications found.", style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 16)),
                     ],
                   ),
                 );
@@ -90,6 +92,7 @@ class _NotificationInboxScreenState extends State<NotificationInboxScreen> {
                         }
                       },
                       child: _buildNotificationItem(
+                        context: context,
                         icon: Icons.notifications,
                         title: notif['title'] ?? 'Notification',
                         message: notif['message'] ?? '...',
@@ -108,12 +111,15 @@ class _NotificationInboxScreenState extends State<NotificationInboxScreen> {
   }
 
   Widget _buildNotificationItem({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String message,
     required String time,
     required bool isNew,
   }) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
     return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -123,7 +129,7 @@ class _NotificationInboxScreenState extends State<NotificationInboxScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: isNew ? const Color(0xFF8B5CF6) : Colors.white.withOpacity(0.1),
+                color: isNew ? const Color(0xFF8B5CF6) : textColor.withOpacity(0.1),
                 shape: BoxShape.circle,
                 boxShadow: isNew ? [
                   BoxShadow(
@@ -133,7 +139,7 @@ class _NotificationInboxScreenState extends State<NotificationInboxScreen> {
                   )
                 ] : null,
               ),
-              child: Icon(icon, color: Colors.white, size: 24),
+              child: Icon(icon, color: isNew ? Colors.white : textColor.withOpacity(0.7), size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -145,7 +151,7 @@ class _NotificationInboxScreenState extends State<NotificationInboxScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: isNew ? FontWeight.bold : FontWeight.w600,
-                      color: Colors.white,
+                      color: textColor,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -153,7 +159,7 @@ class _NotificationInboxScreenState extends State<NotificationInboxScreen> {
                     message,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.7),
+                      color: textColor.withOpacity(0.7),
                       height: 1.4,
                     ),
                   ),
@@ -164,13 +170,13 @@ class _NotificationInboxScreenState extends State<NotificationInboxScreen> {
                         time,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.white.withOpacity(0.5),
+                          color: textColor.withOpacity(0.5),
                         ),
                       ),
                       if (isNew) ...[
                         Text(
                           " • ",
-                          style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.5)),
+                          style: TextStyle(fontSize: 13, color: textColor.withOpacity(0.5)),
                         ),
                         const Text(
                           "New",
