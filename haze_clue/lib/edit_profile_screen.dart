@@ -30,13 +30,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _loadProfile() async {
     try {
       final profile = await ApiService.getProfile();
-      _nameController.text = profile['fullName'] ?? '';
-      _emailController.text = profile['email'] ?? '';
-      _nicknameController.text = profile['nickname'] ?? '';
-      _phoneController.text = profile['phoneNumber'] ?? '';
-      _countryController.text = profile['country'] ?? '';
-      _genderController.text = profile['gender'] ?? '';
-      _addressController.text = profile['address'] ?? '';
+      setState(() {
+        _nameController.text = profile['fullName'] ?? '';
+        _nicknameController.text = profile['nickname'] ?? '';
+        _emailController.text = profile['email'] ?? '';
+        _phoneController.text = profile['phoneNumber'] ?? '';
+        _countryController.text = profile['country'] ?? '';
+        _addressController.text = profile['address'] ?? '';
+        
+        String genderVal = profile['gender']?.toString() ?? '';
+        if (genderVal == '0') {
+          _genderController.text = 'Female';
+        } else if (genderVal == '1') {
+          _genderController.text = 'Male';
+        } else {
+          _genderController.text = genderVal;
+        }
+        
+        _isLoading = false;
+      });
     } catch (e) {
       debugPrint("Error loading profile: $e");
     } finally {
