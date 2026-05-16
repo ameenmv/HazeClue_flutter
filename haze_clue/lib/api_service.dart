@@ -162,6 +162,26 @@ class ApiService {
     if (res.statusCode != 200) throw Exception('Failed to update notification settings');
   }
 
+  static Future<Map<String, dynamic>> getDeviceSettings() async {
+    final headers = await _authHeaders();
+    final res = await http.get(
+      Uri.parse('$baseUrl/users/me/device-settings'),
+      headers: headers,
+    );
+    if (res.statusCode == 200) return jsonDecode(res.body);
+    throw Exception('Failed to get device settings');
+  }
+
+  static Future<void> updateDeviceSettings(double intensityLevel) async {
+    final headers = await _authHeaders();
+    final res = await http.put(
+      Uri.parse('$baseUrl/users/me/device-settings'),
+      headers: headers,
+      body: jsonEncode({'intensityLevel': intensityLevel}),
+    );
+    if (res.statusCode != 200) throw Exception('Failed to update device settings');
+  }
+
   static Future<List<dynamic>> getActiveSessions() async {
     final headers = await _authHeaders();
     final res = await http.get(
