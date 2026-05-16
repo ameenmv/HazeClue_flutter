@@ -8,7 +8,7 @@ class SignalRService {
 
   Future<void> connect() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+    final token = prefs.getString('jwt');
 
     final serverUrl = '${ApiService.baseUrl.replaceAll('/api/v1', '')}/sessionHub';
 
