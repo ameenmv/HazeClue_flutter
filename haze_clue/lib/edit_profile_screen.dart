@@ -32,26 +32,34 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final profile = await ApiService.getProfile();
       _nameController.text = profile['fullName'] ?? '';
       _emailController.text = profile['email'] ?? '';
-      // Other fields are not currently returned by backend, so leave empty or null
-      _nicknameController.text = '';
-      _phoneController.text = '';
-      _countryController.text = '';
-      _genderController.text = '';
-      _addressController.text = '';
+      _nicknameController.text = profile['nickname'] ?? '';
+      _phoneController.text = profile['phoneNumber'] ?? '';
+      _countryController.text = profile['country'] ?? '';
+      _genderController.text = profile['gender'] ?? '';
+      _addressController.text = profile['address'] ?? '';
     } catch (e) {
       debugPrint("Error loading profile: $e");
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _saveProfile() async {
+    setState(() => _isLoading = true);
     try {
-      await ApiService.updateProfile(_nameController.text);
+      await ApiService.updateProfile(
+        fullName: _nameController.text,
+        nickname: _nicknameController.text,
+        phoneNumber: _phoneController.text,
+        country: _countryController.text,
+        address: _addressController.text,
+      );
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -129,6 +137,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: _buildProfileTextField(
                     label: "Gender",
                     controller: _genderController,
+                    readOnly: true, // Gender is read-only
                   ),
                 ),
               ],
@@ -173,10 +182,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     String? initialValue,
     TextEditingController? controller,
     Widget? prefixIcon,
+    bool readOnly = false,
   }) {
     return TextFormField(
       initialValue: initialValue,
       controller: controller,
+      readOnly: readOnly,
       style: const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w500,

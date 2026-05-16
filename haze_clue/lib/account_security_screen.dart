@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'main.dart'; // For colors
 import 'api_service.dart';
 import 'intro_screen.dart';
+import 'change_password_screen.dart';
 
 class AccountSecurityScreen extends StatefulWidget {
   const AccountSecurityScreen({super.key});
@@ -13,6 +14,63 @@ class AccountSecurityScreen extends StatefulWidget {
 
 class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
   bool _isTwoFactorEnabled = false;
+  List<dynamic> _sessions = [];
+  List<dynamic> _securityLogs = [];
+  bool _isLoadingSessions = true;
+  bool _isLoadingLogs = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    _loadSessions();
+    _loadSecurityLogs();
+  }
+
+  Future<void> _loadSessions() async {
+    setState(() => _isLoadingSessions = true);
+    try {
+      final data = await ApiService.getActiveSessions();
+      if (mounted) setState(() => _sessions = data);
+    } catch (e) {
+      debugPrint("Failed to load sessions: $e");
+    } finally {
+      if (mounted) setState(() => _isLoadingSessions = false);
+    }
+  }
+
+  Future<void> _loadSecurityLogs() async {
+    setState(() => _isLoadingLogs = true);
+    try {
+      final data = await ApiService.getSecurityLogs();
+      if (mounted) setState(() => _securityLogs = data);
+    } catch (e) {
+      debugPrint("Failed to load security logs: $e");
+    } finally {
+      if (mounted) setState(() => _isLoadingLogs = false);
+    }
+  }
+
+  Future<void> _revokeSession(String id) async {
+    try {
+      await ApiService.revokeSession(id);
+      _loadSessions(); // Refresh list
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
+
+  Future<void> _revokeOtherSessions() async {
+    try {
+      await ApiService.revokeOtherSessions();
+      _loadSessions(); // Refresh list
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +113,12 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                 trailing: const Icon(Icons.arrow_forward_ios,
                     size: 16, color: Colors.grey),
                 onTap: () {
-                  // Navigate to change password
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ChangePasswordScreen(),
+                    ),
+                  );
                 },
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
               ),
@@ -115,7 +178,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
               children: [
                 _buildSectionTitle("Active Sessions"),
                 GestureDetector(
-                  onTap: () {},
+                  onTap: _revokeOtherSessions,
                   child: Text(
                     "Sign out of all other devices",
                     style: TextStyle(
@@ -128,51 +191,66 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            _buildContainer(
-              child: Column(
-                children: [
-                  _buildSessionItem(
-                    deviceName: "iPhone 13 Mini (Current)",
-                    location: "New York, USA",
-                    time: "Last active: Just now",
+            _isLoadingSessions 
+              ? const Center(child: CircularProgressIndicator())
+              : _sessions.isEmpty
+                ? const Text("No active sessions found.")
+                : _buildContainer(
+                    child: Column(
+                      children: _sessions.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final session = entry.value;
+                        final isCurrent = session['isCurrent'] == true;
+                        
+                        return Column(
+                          children: [
+                            _buildSessionItem(
+                              id: session['id'],
+                              deviceName: session['deviceName'] + (isCurrent ? " (Current)" : ""),
+                              location: session['location'] ?? "Unknown Location",
+                              time: "Started: ${DateTime.parse(session['loginTime']).toLocal().toString().split('.')[0]}",
+                              isCurrent: isCurrent,
+                            ),
+                            if (index < _sessions.length - 1)
+                              const Divider(color: Color(0xFFEEEEEE), height: 1),
+                          ],
+                        );
+                      }).toList(),
+                    ),
                   ),
-                  const Divider(color: Color(0xFFEEEEEE), height: 1),
-                  _buildSessionItem(
-                    deviceName: "MacBook Air M2",
-                    location: "London, UK",
-                    time: "Last active: 2 days ago",
-                  ),
-                  const Divider(color: Color(0xFFEEEEEE), height: 1),
-                  _buildSessionItem(
-                    deviceName: "Samsung Galaxy S23",
-                    location: "Berlin, Germany",
-                    time: "Last active: 1 week ago",
-                  ),
-                ],
-              ),
-            ),
             const SizedBox(height: 24),
 
             // --- Recent Security Activity ---
             _buildSectionTitle("Recent Security Activity"),
             const SizedBox(height: 12),
-            _buildContainer(
-              child: Column(
-                children: [
-                  _buildActivityItem(
-                    icon: Icons.shield_outlined,
-                    title: "Password changed successfully",
-                    time: "2 hours ago",
+            _isLoadingLogs
+              ? const Center(child: CircularProgressIndicator())
+              : _securityLogs.isEmpty
+                ? const Text("No recent security activity.")
+                : _buildContainer(
+                    child: Column(
+                      children: _securityLogs.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final log = entry.value;
+                        final event = log['event'].toString();
+                        final icon = event.toLowerCase().contains("password") 
+                                     ? Icons.shield_outlined 
+                                     : Icons.info_outline;
+
+                        return Column(
+                          children: [
+                            _buildActivityItem(
+                              icon: icon,
+                              title: event,
+                              time: DateTime.parse(log['createdAt']).toLocal().toString().split('.')[0],
+                            ),
+                            if (index < _securityLogs.length - 1)
+                              const Divider(color: Color(0xFFEEEEEE), height: 1),
+                          ],
+                        );
+                      }).toList(),
+                    ),
                   ),
-                  const Divider(color: Color(0xFFEEEEEE), height: 1),
-                  _buildActivityItem(
-                    icon: Icons.error_outline,
-                    title: "New device login from unrecognised location",
-                    time: "Yesterday",
-                  ),
-                ],
-              ),
-            ),
             const SizedBox(height: 24),
 
             // --- Security Tip ---
@@ -273,9 +351,11 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
   }
 
   Widget _buildSessionItem({
+    required String id,
     required String deviceName,
     required String location,
     required String time,
+    required bool isCurrent,
   }) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -313,17 +393,18 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
               ],
             ),
           ),
-          GestureDetector(
-            onTap: () {},
-            child: Text(
-              "Sign out",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: kPrimaryPurple.withOpacity(0.9),
+          if (!isCurrent)
+            GestureDetector(
+              onTap: () => _revokeSession(id),
+              child: Text(
+                "Sign out",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: kPrimaryPurple.withOpacity(0.9),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

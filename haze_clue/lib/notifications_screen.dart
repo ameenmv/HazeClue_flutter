@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'main.dart'; // For colors
 
+import 'api_service.dart';
+
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
@@ -10,6 +12,8 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
+  bool _isLoading = true;
+
   // State variables for switches
   bool _generalNotification = true;
   bool _sound = false;
@@ -20,6 +24,75 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   bool _newServiceAvailable = false;
   bool _newTipsAvailable = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    try {
+      final settings = await ApiService.getNotificationSettings();
+      if (mounted) {
+        setState(() {
+          _generalNotification = settings['generalNotification'] ?? true;
+          _sound = settings['sound'] ?? false;
+          _vibrate = settings['vibrate'] ?? true;
+          _appUpdates = settings['appUpdates'] ?? false;
+          _otherUpdates = settings['serviceAlerts'] ?? true;
+          _newServiceAvailable = settings['newServiceAvailable'] ?? false;
+          _newTipsAvailable = settings['newTipsAvailable'] ?? true;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("Failed to load settings: $e");
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _updateSetting(String key, bool value) async {
+    // Optimistic update
+    setState(() {
+      switch (key) {
+        case 'generalNotification': _generalNotification = value; break;
+        case 'sound': _sound = value; break;
+        case 'vibrate': _vibrate = value; break;
+        case 'appUpdates': _appUpdates = value; break;
+        case 'serviceAlerts': _otherUpdates = value; break;
+        case 'newServiceAvailable': _newServiceAvailable = value; break;
+        case 'newTipsAvailable': _newTipsAvailable = value; break;
+      }
+    });
+
+    try {
+      await ApiService.updateNotificationSettings({
+        'generalNotification': _generalNotification,
+        'sound': _sound,
+        'vibrate': _vibrate,
+        'appUpdates': _appUpdates,
+        'serviceAlerts': _otherUpdates,
+        'newServiceAvailable': _newServiceAvailable,
+        'newTipsAvailable': _newTipsAvailable,
+      });
+    } catch (e) {
+      debugPrint("Failed to update settings: $e");
+      // Revert on failure
+      setState(() {
+        switch (key) {
+          case 'generalNotification': _generalNotification = !value; break;
+          case 'sound': _sound = !value; break;
+          case 'vibrate': _vibrate = !value; break;
+          case 'appUpdates': _appUpdates = !value; break;
+          case 'serviceAlerts': _otherUpdates = !value; break;
+          case 'newServiceAvailable': _newServiceAvailable = !value; break;
+          case 'newTipsAvailable': _newTipsAvailable = !value; break;
+        }
+      });
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +115,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,17 +135,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             _buildSwitchTile(
               title: "General Notification",
               value: _generalNotification,
-              onChanged: (val) => setState(() => _generalNotification = val),
+              onChanged: (val) => _updateSetting('generalNotification', val),
             ),
             _buildSwitchTile(
               title: "Sound",
               value: _sound,
-              onChanged: (val) => setState(() => _sound = val),
+              onChanged: (val) => _updateSetting('sound', val),
             ),
             _buildSwitchTile(
               title: "Vibrate",
               value: _vibrate,
-              onChanged: (val) => setState(() => _vibrate = val),
+              onChanged: (val) => _updateSetting('vibrate', val),
             ),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 8.0),
@@ -91,13 +166,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             _buildSwitchTile(
               title: "App updates",
               value: _appUpdates,
-              onChanged: (val) => setState(() => _appUpdates = val),
+              onChanged: (val) => _updateSetting('appUpdates', val),
             ),
             // The design has a switch without a label, adding a placeholder label
             _buildSwitchTile(
               title: "Service alerts",
               value: _otherUpdates,
-              onChanged: (val) => setState(() => _otherUpdates = val),
+              onChanged: (val) => _updateSetting('serviceAlerts', val),
             ),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 8.0),
@@ -118,12 +193,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             _buildSwitchTile(
               title: "New Service Available",
               value: _newServiceAvailable,
-              onChanged: (val) => setState(() => _newServiceAvailable = val),
+              onChanged: (val) => _updateSetting('newServiceAvailable', val),
             ),
             _buildSwitchTile(
               title: "New Tips Available",
               value: _newTipsAvailable,
-              onChanged: (val) => setState(() => _newTipsAvailable = val),
+              onChanged: (val) => _updateSetting('newTipsAvailable', val),
             ),
           ],
         ),

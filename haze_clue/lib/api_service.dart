@@ -123,6 +123,83 @@ class ApiService {
     }
   }
 
+  static Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final headers = await _authHeaders();
+    final res = await http.post(
+      Uri.parse('$baseUrl/account/change-password'),
+      headers: headers,
+      body: jsonEncode({
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      }),
+    );
+    if (res.statusCode != 200 && res.statusCode != 201) {
+      final data = jsonDecode(res.body);
+      throw Exception(data['message'] ?? 'Failed to change password');
+    }
+  }
+
+  static Future<Map<String, dynamic>> getNotificationSettings() async {
+    final headers = await _authHeaders();
+    final res = await http.get(
+      Uri.parse('$baseUrl/users/me/notification-settings'),
+      headers: headers,
+    );
+    if (res.statusCode == 200) return jsonDecode(res.body);
+    throw Exception('Failed to get notification settings');
+  }
+
+  static Future<void> updateNotificationSettings(Map<String, dynamic> settings) async {
+    final headers = await _authHeaders();
+    final res = await http.put(
+      Uri.parse('$baseUrl/users/me/notification-settings'),
+      headers: headers,
+      body: jsonEncode(settings),
+    );
+    if (res.statusCode != 200) throw Exception('Failed to update notification settings');
+  }
+
+  static Future<List<dynamic>> getActiveSessions() async {
+    final headers = await _authHeaders();
+    final res = await http.get(
+      Uri.parse('$baseUrl/account/sessions'),
+      headers: headers,
+    );
+    if (res.statusCode == 200) return jsonDecode(res.body);
+    throw Exception('Failed to get sessions');
+  }
+
+  static Future<void> revokeSession(String id) async {
+    final headers = await _authHeaders();
+    final res = await http.delete(
+      Uri.parse('$baseUrl/account/sessions/$id'),
+      headers: headers,
+    );
+    if (res.statusCode != 200) throw Exception('Failed to revoke session');
+  }
+
+  static Future<void> revokeOtherSessions() async {
+    final headers = await _authHeaders();
+    final res = await http.delete(
+      Uri.parse('$baseUrl/account/sessions/other'),
+      headers: headers,
+    );
+    if (res.statusCode != 200) throw Exception('Failed to revoke other sessions');
+  }
+
+  static Future<List<dynamic>> getSecurityLogs() async {
+    final headers = await _authHeaders();
+    final res = await http.get(
+      Uri.parse('$baseUrl/account/security-logs'),
+      headers: headers,
+    );
+    if (res.statusCode == 200) return jsonDecode(res.body);
+    throw Exception('Failed to get security logs');
+  }
+
   static Future<Map<String, dynamic>> getProfile() async {
     final headers = await _authHeaders();
     final res = await http.get(
@@ -151,6 +228,16 @@ class ApiService {
     );
     if (res.statusCode == 200) return jsonDecode(res.body);
     throw Exception('Failed to get sessions');
+  }
+
+  static Future<Map<String, dynamic>> getInsights() async {
+    final headers = await _authHeaders();
+    final res = await http.get(
+      Uri.parse('$baseUrl/sessions/insights'),
+      headers: headers,
+    );
+    if (res.statusCode == 200) return jsonDecode(res.body);
+    throw Exception('Failed to get insights');
   }
 
   static Future<List<dynamic>> getNotifications() async {
@@ -187,29 +274,33 @@ class ApiService {
     }
   }
 
-  static Future<Map<String, dynamic>> updateProfile(String fullName) async {
+  static Future<Map<String, dynamic>> updateProfile({
+    required String fullName,
+    String? nickname,
+    String? phoneNumber,
+    String? country,
+    String? address,
+  }) async {
+    print('Sending profile update to backend with name: $fullName');
     final headers = await _authHeaders();
-    final res = await http.patch(
+    final res = await http.put(
       Uri.parse('$baseUrl/users/me'),
       headers: headers,
-      body: jsonEncode({'fullName': fullName}),
+      body: jsonEncode({
+        'fullName': fullName,
+        if (nickname != null) 'nickname': nickname,
+        if (phoneNumber != null) 'phoneNumber': phoneNumber,
+        if (country != null) 'country': country,
+        if (address != null) 'address': address,
+      }),
     );
+    print('Response status: ${res.statusCode}');
+    print('Response body: ${res.body}');
     if (res.statusCode == 200) return jsonDecode(res.body);
-    throw Exception('Failed to update profile');
+    throw Exception('Failed to update profile: ${res.body}');
   }
 
-  static Future<void> changePassword(String currentPassword, String newPassword) async {
-    final headers = await _authHeaders();
-    final res = await http.patch(
-      Uri.parse('$baseUrl/users/me/password'),
-      headers: headers,
-      body: jsonEncode({'currentPassword': currentPassword, 'newPassword': newPassword}),
-    );
-    if (res.statusCode != 200) {
-      final data = jsonDecode(res.body);
-      throw Exception(data['message'] ?? 'Failed to change password');
-    }
-  }
+
 
   static Future<List<dynamic>> getDevices() async {
     final headers = await _authHeaders();

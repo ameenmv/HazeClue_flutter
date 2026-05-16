@@ -5,6 +5,7 @@ import 'shared_widgets.dart';
 import 'navigation_shell.dart';
 
 import 'api_service.dart';
+import 'tdcs_consent_screen.dart';
 
 // This class fixes the "slow" or "clunky" scrolling behavior
 class SmoothScrollBehavior extends MaterialScrollBehavior {
@@ -51,10 +52,9 @@ class _PersonalHealthAssessmentState extends State<PersonalHealthAssessment> {
         };
         await ApiService.submitHealthAssessment(payload);
         if (!mounted) return;
-        Navigator.pushAndRemoveUntil(
+        Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const MainNavigationShell()),
-          (route) => false,
+          MaterialPageRoute(builder: (_) => const TdcsConsentScreen()),
         );
       } catch (e) {
         if (!mounted) return;

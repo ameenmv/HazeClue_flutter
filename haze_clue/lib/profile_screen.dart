@@ -9,6 +9,7 @@ import 'help_support_screen.dart';
 import 'contact_us_screen.dart';
 import 'account_security_screen.dart';
 import 'privacy_policy_screen.dart';
+import 'intro_screen.dart'; // Added for logout navigation
 
 import 'api_service.dart';
 
@@ -120,13 +121,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     // Edit Icon
                     GestureDetector(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) => const EditProfileScreen(),
                           ),
                         );
+                        _loadProfile(); // Refresh profile after editing
                       },
                       child: Container(
                         padding: const EdgeInsets.all(6),
@@ -183,13 +185,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _buildMenuItem(
                           icon: Icons.badge_outlined,
                           title: "Edit profile information",
-                          onTap: () {
-                            Navigator.push(
+                          onTap: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => const EditProfileScreen(),
                               ),
                             );
+                            _loadProfile(); // Refresh profile after editing
                           },
                         ),
                         _buildMenuItem(
@@ -276,6 +279,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           },
                         ),
                       ]),
+                      const SizedBox(height: 24),
+                      
+                      // --- Logout Button ---
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            await ApiService.logout();
+                            if (!mounted) return;
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(builder: (_) => const IntroScreen()),
+                              (route) => false,
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: const BorderSide(color: Colors.redAccent),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.logout, color: Colors.redAccent),
+                              SizedBox(width: 8),
+                              Text(
+                                "Logout",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.redAccent,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 32), // Bottom padding
                     ],
                   ),
