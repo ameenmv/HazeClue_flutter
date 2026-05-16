@@ -174,19 +174,22 @@ class _SessionsScreenState extends State<SessionsScreen> {
 
   void _showCompletionDialog(int avgConcentration, int elapsedSeconds) {
     String timeString = _formatTime(elapsedSeconds);
+    final textColor = Theme.of(context).colorScheme.onSurface;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E2A),
+        backgroundColor: isLight ? Colors.white : const Color(0xFF1E1E2A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: Colors.white.withOpacity(0.1)),
+          side: BorderSide(color: textColor.withOpacity(0.1)),
         ),
-        title: const Text("Session Complete!", style: TextStyle(color: Colors.white)),
+        title: Text("Session Complete!", style: TextStyle(color: textColor)),
         content: Text(
           "You completed $timeString of focus.\n\nAverage Concentration: $avgConcentration%",
-          style: TextStyle(color: Colors.white.withOpacity(0.8)),
+          style: TextStyle(color: textColor.withOpacity(0.8)),
         ),
         actions: [
           TextButton(
@@ -199,23 +202,26 @@ class _SessionsScreenState extends State<SessionsScreen> {
   }
 
   void _showDeviceRequiredDialog() {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E2A),
+        backgroundColor: isLight ? Colors.white : const Color(0xFF1E1E2A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: Colors.white.withOpacity(0.1)),
+          side: BorderSide(color: textColor.withOpacity(0.1)),
         ),
-        title: const Text("Device Required", style: TextStyle(color: Colors.white)),
+        title: Text("Device Required", style: TextStyle(color: textColor)),
         content: Text(
           "You need to connect an EEG headset or smartwatch to start a focus session. Do you want to connect a device now?",
-          style: TextStyle(color: Colors.white.withOpacity(0.8)),
+          style: TextStyle(color: textColor.withOpacity(0.8)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Cancel", style: TextStyle(color: Colors.white.withOpacity(0.5))),
+            child: Text("Cancel", style: TextStyle(color: textColor.withOpacity(0.5))),
           ),
           TextButton(
             onPressed: () {
@@ -240,16 +246,18 @@ class _SessionsScreenState extends State<SessionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           "Concentration level",
           style: TextStyle(
-            color: Colors.white,
+            color: textColor,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
@@ -265,7 +273,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                   ? (_isPaused ? "The session is paused." : "The session is ongoing.") 
                   : "Ready to focus?",
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: textColor.withOpacity(0.7),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -281,10 +289,10 @@ class _SessionsScreenState extends State<SessionsScreen> {
                     Center(
                       child: Text(
                         _isSessionActive ? _formatTime(_secondsRemaining) : _formatTime(_selectedDuration * 60),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 56,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: textColor,
                           letterSpacing: 2,
                         ),
                       ),
@@ -293,7 +301,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                     Text(
                       "From $_selectedDuration minutes",
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: textColor.withOpacity(0.6),
                         fontSize: 15,
                       ),
                     ),
@@ -305,7 +313,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                             ? 1.0 - (_secondsRemaining / (_selectedDuration * 60)) 
                             : 0.0,
                         minHeight: 8,
-                        backgroundColor: Colors.white.withOpacity(0.1),
+                        backgroundColor: textColor.withOpacity(0.1),
                         valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
                       ),
                     ),
@@ -323,25 +331,25 @@ class _SessionsScreenState extends State<SessionsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       "Session Configuration",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: textColor,
                       ),
                     ),
                     const SizedBox(height: 24),
                     Row(
                       children: [
-                        Icon(Icons.access_time, size: 20, color: Colors.white.withOpacity(0.8)),
+                        Icon(Icons.access_time, size: 20, color: textColor.withOpacity(0.8)),
                         const SizedBox(width: 8),
                         Text(
                           "Duration (min)",
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white.withOpacity(0.8),
+                            color: textColor.withOpacity(0.8),
                           ),
                         ),
                       ],
@@ -371,10 +379,10 @@ class _SessionsScreenState extends State<SessionsScreen> {
                                 height: 48,
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                  color: isSelected ? const Color(0xFF8B5CF6) : Colors.white.withOpacity(0.05),
+                                  color: isSelected ? const Color(0xFF8B5CF6) : textColor.withOpacity(0.05),
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: isSelected ? const Color(0xFF8B5CF6) : Colors.white.withOpacity(0.2),
+                                    color: isSelected ? const Color(0xFF8B5CF6) : textColor.withOpacity(0.2),
                                     width: 1.5,
                                   ),
                                   boxShadow: isSelected ? [
@@ -388,7 +396,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                                 child: Text(
                                   "$duration",
                                   style: TextStyle(
-                                    color: isSelected ? Colors.white : Colors.white.withOpacity(0.8),
+                                    color: isSelected ? textColor.inversePrimary : textColor.withOpacity(0.8),
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                   ),
@@ -405,12 +413,12 @@ class _SessionsScreenState extends State<SessionsScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           "Live Concentration Rate",
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: textColor,
                           ),
                         ),
                         Text(
@@ -431,7 +439,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                         child: LinearProgressIndicator(
                           value: _isSessionActive ? _currentConcentration / 100 : 0.0,
                           minHeight: 8,
-                          backgroundColor: Colors.white.withOpacity(0.1),
+                          backgroundColor: textColor.withOpacity(0.1),
                           valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
                         ),
                       ),
@@ -490,22 +498,22 @@ class _SessionsScreenState extends State<SessionsScreen> {
                                 height: 56,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
-                                  color: Colors.white.withOpacity(0.05),
+                                  border: Border.all(color: textColor.withOpacity(0.3), width: 1.5),
+                                  color: textColor.withOpacity(0.05),
                                 ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
                                       _isPaused ? Icons.play_arrow : Icons.pause,
-                                      color: Colors.white,
+                                      color: textColor,
                                       size: 20,
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
                                       _isPaused ? "Resume" : "Pause",
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                      style: TextStyle(
+                                        color: textColor,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 15,
                                       ),

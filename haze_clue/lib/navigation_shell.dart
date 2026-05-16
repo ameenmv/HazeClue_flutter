@@ -27,6 +27,9 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
     return AnimatedBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent, // Very important for the background to show through!
@@ -44,10 +47,10 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF1E1E2A).withOpacity(0.6), // Dark sleek translucent
+                color: isLight ? Colors.white.withOpacity(0.6) : const Color(0xFF1E1E2A).withOpacity(0.6), // Dynamic translucent
                 border: Border(
                   top: BorderSide(
-                    color: Colors.white.withOpacity(0.1),
+                    color: textColor.withOpacity(0.1),
                     width: 1,
                   ),
                 ),
@@ -60,7 +63,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                     backgroundColor: Colors.transparent,
                     type: BottomNavigationBarType.fixed,
                     selectedItemColor: const Color(0xFF8B5CF6),
-                    unselectedItemColor: Colors.white.withOpacity(0.5),
+                    unselectedItemColor: textColor.withOpacity(0.5),
                     showUnselectedLabels: true,
                     currentIndex: _selectedIndex,
                     onTap: (index) {
