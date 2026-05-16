@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'main.dart'; // For colors
 import 'api_service.dart';
+import 'glass_widgets.dart';
 
 class ContactUsScreen extends StatefulWidget {
   const ContactUsScreen({super.key});
@@ -20,11 +20,11 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     try {
       await ApiService.submitSupportTicket(_subjectController.text, _messageController.text);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Message sent successfully!')));
+      showGlassToast(context, 'Message sent successfully!', isError: false);
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))));
+      showGlassToast(context, e.toString().replaceAll('Exception: ', ''));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -33,195 +33,159 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "Contact Us",
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            // --- Send Us a Message Card ---
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Center(
-                    child: Text(
-                      "Send us a message",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: kTextDark,
-                      ),
+      body: AnimatedBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                // --- Send Us a Message Card ---
+                GlassCard(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Center(
+                          child: Text(
+                            "Send us a message",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        GlassTextField(
+                          label: "Subject",
+                          hint: "Message Subject",
+                          controller: _subjectController,
+                          icon: Icons.subject,
+                        ),
+                        const SizedBox(height: 16),
+                        GlassTextField(
+                          label: "Message",
+                          hint: "How can we help you today?",
+                          controller: _messageController,
+                          icon: Icons.message_outlined,
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  _buildInputLabel("Name"),
-                  _buildTextField(hint: "Your name"),
-                  const SizedBox(height: 16),
-                  _buildInputLabel("Subject"),
-                  _buildTextField(hint: "Message Subject", controller: _subjectController),
-                  const SizedBox(height: 16),
-                  _buildInputLabel("Message"),
-                  _buildTextField(
-                    hint: "How can we help you today?",
-                    controller: _messageController,
-                    maxLines: 4,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // --- Send Message Button ---
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: _isLoading ? const Center(child: CircularProgressIndicator()) : ElevatedButton(
-                onPressed: _submitTicket,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: kPrimaryPurple,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
                 ),
-                child: const Text(
-                  "Send Message",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
+                const SizedBox(height: 32),
 
-            // --- Reach Out Directly Card ---
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Reach Out Directly",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: kTextDark,
+                // --- Send Message Button ---
+                _isLoading 
+                  ? const Center(child: CircularProgressIndicator(color: Colors.white)) 
+                  : GlassButton(
+                      text: "Send Message",
+                      onPressed: _submitTicket,
+                    ),
+                const SizedBox(height: 32),
+
+                // --- Reach Out Directly Card ---
+                GlassCard(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Reach Out Directly",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.mail_outline, color: Color(0xFF8B5CF6), size: 20),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: RichText(
+                                text: const TextSpan(
+                                  style: TextStyle(color: Colors.white, fontSize: 14),
+                                  children: [
+                                    TextSpan(
+                                      text: "Email: ",
+                                      style: TextStyle(fontWeight: FontWeight.w600),
+                                    ),
+                                    TextSpan(text: "support@"),
+                                    TextSpan(
+                                      text: "HazeClue",
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                    TextSpan(text: ".com"),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.access_time, color: Color(0xFF8B5CF6), size: 20),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: RichText(
+                                text: const TextSpan(
+                                  style: TextStyle(color: Colors.white, fontSize: 14),
+                                  children: [
+                                    TextSpan(
+                                      text: "Hours:  ",
+                                      style: TextStyle(fontWeight: FontWeight.w600),
+                                    ),
+                                    TextSpan(text: "Mon-Fri, 9 AM - 5 PM (EST)"),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      const Icon(Icons.mail_outline, color: kPrimaryPurple),
-                      const SizedBox(width: 12),
-                      RichText(
-                        text: const TextSpan(
-                          style: TextStyle(color: kTextDark, fontSize: 14),
-                          children: [
-                            TextSpan(
-                              text: "Email: ",
-                              style: TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                            TextSpan(text: "support@"),
-                            TextSpan(
-                              text: "HazeClue",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            TextSpan(text: ".com"),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      const Icon(Icons.access_time, color: kPrimaryPurple),
-                      const SizedBox(width: 12),
-                      RichText(
-                        text: const TextSpan(
-                          style: TextStyle(color: kTextDark, fontSize: 14),
-                          children: [
-                            TextSpan(
-                              text: "Hours:  ",
-                              style: TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                            TextSpan(text: "Mon-Fri, 9 AM - 5 PM (EST)"),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInputLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.bold,
-          color: kTextDark,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({required String hint, TextEditingController? controller, int maxLines = 1}) {
-    return TextField(
-      controller: controller,
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: kPrimaryPurple),
+          ),
         ),
       ),
     );

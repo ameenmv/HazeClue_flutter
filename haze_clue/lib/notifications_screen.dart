@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'main.dart'; // For colors
-
 import 'api_service.dart';
+import 'glass_widgets.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -90,117 +89,143 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           case 'newTipsAvailable': _newTipsAvailable = !value; break;
         }
       });
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) showGlassToast(context, e.toString());
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "Notifications",
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // --- Common Section ---
-            const Text(
-              "Common",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: kTextDark,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildSwitchTile(
-              title: "General Notification",
-              value: _generalNotification,
-              onChanged: (val) => _updateSetting('generalNotification', val),
-            ),
-            _buildSwitchTile(
-              title: "Sound",
-              value: _sound,
-              onChanged: (val) => _updateSetting('sound', val),
-            ),
-            _buildSwitchTile(
-              title: "Vibrate",
-              value: _vibrate,
-              onChanged: (val) => _updateSetting('vibrate', val),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8.0),
-              child: Divider(color: Color(0xFFEEEEEE), thickness: 1),
-            ),
+      body: AnimatedBackground(
+        child: SafeArea(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator(color: Colors.white))
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // --- Common Section ---
+                      const Text(
+                        "Common",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      GlassCard(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              _buildSwitchTile(
+                                title: "General Notification",
+                                value: _generalNotification,
+                                onChanged: (val) => _updateSetting('generalNotification', val),
+                              ),
+                              _buildDivider(),
+                              _buildSwitchTile(
+                                title: "Sound",
+                                value: _sound,
+                                onChanged: (val) => _updateSetting('sound', val),
+                              ),
+                              _buildDivider(),
+                              _buildSwitchTile(
+                                title: "Vibrate",
+                                value: _vibrate,
+                                onChanged: (val) => _updateSetting('vibrate', val),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
 
-            // --- System & services update Section ---
-            const SizedBox(height: 8),
-            const Text(
-              "System & services update",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: kTextDark,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildSwitchTile(
-              title: "App updates",
-              value: _appUpdates,
-              onChanged: (val) => _updateSetting('appUpdates', val),
-            ),
-            // The design has a switch without a label, adding a placeholder label
-            _buildSwitchTile(
-              title: "Service alerts",
-              value: _otherUpdates,
-              onChanged: (val) => _updateSetting('serviceAlerts', val),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8.0),
-              child: Divider(color: Color(0xFFEEEEEE), thickness: 1),
-            ),
+                      // --- System & services update Section ---
+                      const Text(
+                        "System & services update",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      GlassCard(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              _buildSwitchTile(
+                                title: "App updates",
+                                value: _appUpdates,
+                                onChanged: (val) => _updateSetting('appUpdates', val),
+                              ),
+                              _buildDivider(),
+                              _buildSwitchTile(
+                                title: "Service alerts",
+                                value: _otherUpdates,
+                                onChanged: (val) => _updateSetting('serviceAlerts', val),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
 
-            // --- Others Section ---
-            const SizedBox(height: 8),
-            const Text(
-              "Others",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: kTextDark,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildSwitchTile(
-              title: "New Service Available",
-              value: _newServiceAvailable,
-              onChanged: (val) => _updateSetting('newServiceAvailable', val),
-            ),
-            _buildSwitchTile(
-              title: "New Tips Available",
-              value: _newTipsAvailable,
-              onChanged: (val) => _updateSetting('newTipsAvailable', val),
-            ),
-          ],
+                      // --- Others Section ---
+                      const Text(
+                        "Others",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      GlassCard(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              _buildSwitchTile(
+                                title: "New Service Available",
+                                value: _newServiceAvailable,
+                                onChanged: (val) => _updateSetting('newServiceAvailable', val),
+                              ),
+                              _buildDivider(),
+                              _buildSwitchTile(
+                                title: "New Tips Available",
+                                value: _newTipsAvailable,
+                                onChanged: (val) => _updateSetting('newTipsAvailable', val),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
         ),
       ),
     );
@@ -212,7 +237,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     required ValueChanged<bool> onChanged,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -222,17 +247,27 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
-                color: kTextDark,
+                color: Colors.white,
               ),
             ),
           ),
           CupertinoSwitch(
             value: value,
-            activeColor: kPrimaryPurple,
+            activeColor: const Color(0xFF8B5CF6),
+            thumbColor: Colors.white,
+            trackColor: Colors.white.withOpacity(0.2),
             onChanged: onChanged,
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Divider(
+      height: 24,
+      thickness: 1,
+      color: Colors.white.withOpacity(0.1),
     );
   }
 }

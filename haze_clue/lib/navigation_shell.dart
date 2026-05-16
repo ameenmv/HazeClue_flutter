@@ -1,10 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'main.dart';
 import 'dashboard_screen.dart';
 import 'insights_screen.dart';
 import 'training_screen.dart';
 import 'profile_screen.dart';
 import 'sessions_screen.dart';
+import 'glass_widgets.dart';
 
 class MainNavigationShell extends StatefulWidget {
   const MainNavigationShell({super.key});
@@ -16,49 +17,87 @@ class MainNavigationShell extends StatefulWidget {
 class _MainNavigationShellState extends State<MainNavigationShell> {
   int _selectedIndex = 0;
 
-  // This list links your buttons to the actual screens
   final List<Widget> _pages = [
-    const DashboardContent(), // Your original Dashboard UI
-    const InsightsScreen(), // The Insights page
-    const TrainingScreen(), // The Training page
-    const SessionsScreen(), // The Sessions page
+    const DashboardContent(),
+    const InsightsScreen(),
+    const TrainingScreen(),
+    const SessionsScreen(),
     const ProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: kPrimaryPurple,
-        unselectedItemColor: Colors.grey,
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: "Insights",
+    return AnimatedBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent, // Very important for the background to show through!
+        extendBody: true, // This allows the body to extend behind the bottom nav bar
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: _pages,
+        ),
+        bottomNavigationBar: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.psychology),
-            label: "Training",
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E1E2A).withOpacity(0.6), // Dark sleek translucent
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.white.withOpacity(0.1),
+                    width: 1,
+                  ),
+                ),
+              ),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
+                  child: BottomNavigationBar(
+                    elevation: 0,
+                    backgroundColor: Colors.transparent,
+                    type: BottomNavigationBarType.fixed,
+                    selectedItemColor: const Color(0xFF8B5CF6),
+                    unselectedItemColor: Colors.white.withOpacity(0.5),
+                    showUnselectedLabels: true,
+                    currentIndex: _selectedIndex,
+                    onTap: (index) {
+                      setState(() {
+                        _selectedIndex = index;
+                      });
+                    },
+                    items: [
+                      _buildNavItem(Icons.home_rounded, "Home", 0),
+                      _buildNavItem(Icons.bar_chart_rounded, "Insights", 1),
+                      _buildNavItem(Icons.psychology, "Training", 2),
+                      _buildNavItem(Icons.assignment_rounded, "Sessions", 3),
+                      _buildNavItem(Icons.person_outline_rounded, "Profile", 4),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment),
-            label: "Sessions",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: "Profile",
-          ),
-        ],
+        ),
       ),
+    );
+  }
+
+  BottomNavigationBarItem _buildNavItem(IconData icon, String label, int index) {
+    bool isSelected = _selectedIndex == index;
+    return BottomNavigationBarItem(
+      icon: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF8B5CF6).withOpacity(0.2) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon),
+      ),
+      label: label,
     );
   }
 }

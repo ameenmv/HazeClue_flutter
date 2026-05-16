@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'main.dart'; // For colors
+import 'glass_widgets.dart';
 
 class MemoryTrainingScreen extends StatefulWidget {
   const MemoryTrainingScreen({super.key});
@@ -99,8 +99,10 @@ class _MemoryTrainingScreenState extends State<MemoryTrainingScreen> {
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        title: const Text("Training Complete!"),
-        content: Text("You found all matches in $_moves moves.\nGreat job exercising your memory!"),
+        backgroundColor: const Color(0xFF1E1E2C),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Training Complete!", style: TextStyle(color: Colors.white)),
+        content: Text("You found all matches in $_moves moves.\nGreat job exercising your memory!", style: const TextStyle(color: Colors.white70)),
         actions: [
           TextButton(
             onPressed: () {
@@ -109,14 +111,14 @@ class _MemoryTrainingScreenState extends State<MemoryTrainingScreen> {
                 _initializeGame(); // Restart game
               });
             },
-            child: const Text("Play Again", style: TextStyle(color: kPrimaryPurple)),
+            child: const Text("Play Again", style: TextStyle(color: Color(0xFF8B5CF6))),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context); // Close dialog
               Navigator.pop(context); // Go back to training screen
             },
-            child: const Text("Exit", style: TextStyle(color: Colors.grey)),
+            child: Text("Exit", style: TextStyle(color: Colors.white.withOpacity(0.5))),
           ),
         ],
       ),
@@ -126,138 +128,145 @@ class _MemoryTrainingScreenState extends State<MemoryTrainingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "Memory Training",
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            children: [
-              // Header Status
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Moves",
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                      Text(
-                        "$_moves",
-                        style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: kPrimaryPurple),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      const Text(
-                        "Matches",
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                      Text(
-                        "$_matches / 8",
-                        style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: kPrimaryPurple),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 32),
-              
-              // Game Grid
-              Expanded(
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 1.0,
-                  ),
-                  itemCount: 16,
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () => _onCardTap(index),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        decoration: BoxDecoration(
-                          color: _isFlipped[index] || _isMatched[index] 
-                              ? kPrimaryPurple.withOpacity(0.1) 
-                              : kPrimaryPurple,
-                          borderRadius: BorderRadius.circular(12),
-                          border: _isFlipped[index] || _isMatched[index]
-                              ? Border.all(color: kPrimaryPurple, width: 2)
-                              : null,
+      body: AnimatedBackground(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                // Header Status
+                GlassCard(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Column(
+                          children: [
+                            Text(
+                              "Moves",
+                              style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.6)),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "$_moves",
+                              style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF8B5CF6)),
+                            ),
+                          ],
                         ),
-                        child: Center(
-                          child: _isFlipped[index] || _isMatched[index]
-                              ? Icon(
-                                  _cardIcons[index],
-                                  size: 32,
-                                  color: kPrimaryPurple,
-                                )
-                              : const Icon(
-                                  Icons.help_outline,
-                                  size: 32,
-                                  color: Colors.white70,
-                                ),
+                        Container(
+                          width: 1,
+                          height: 40,
+                          color: Colors.white.withOpacity(0.2),
                         ),
-                      ),
-                    );
-                  },
+                        Column(
+                          children: [
+                            Text(
+                              "Matches",
+                              style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.6)),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "$_matches / 8",
+                              style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF8B5CF6)),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              
-              // Restart Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
+                const SizedBox(height: 32),
+                
+                // Game Grid
+                Expanded(
+                  child: GridView.builder(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 1.0,
+                    ),
+                    itemCount: 16,
+                    itemBuilder: (context, index) {
+                      bool isRevealed = _isFlipped[index] || _isMatched[index];
+                      return GestureDetector(
+                        onTap: () => _onCardTap(index),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          decoration: BoxDecoration(
+                            color: isRevealed 
+                                ? Colors.white.withOpacity(0.2) 
+                                : const Color(0xFF8B5CF6).withOpacity(0.8),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isRevealed 
+                                  ? Colors.white.withOpacity(0.5) 
+                                  : Colors.white.withOpacity(0.1),
+                              width: 1.5,
+                            ),
+                            boxShadow: !isRevealed ? [
+                              BoxShadow(
+                                color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                              )
+                            ] : null,
+                          ),
+                          child: Center(
+                            child: isRevealed
+                                ? Icon(
+                                    _cardIcons[index],
+                                    size: 32,
+                                    color: Colors.white,
+                                  )
+                                : const Icon(
+                                    Icons.help_outline,
+                                    size: 32,
+                                    color: Colors.white70,
+                                  ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                
+                // Restart Button
+                GlassButton(
+                  text: "Restart Game",
+                  isOutlined: true,
                   onPressed: () {
                     setState(() {
                       _initializeGame();
                     });
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kPrimaryPurple,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: const Text(
-                    "Restart Game",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

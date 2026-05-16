@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:async';
 import 'dart:math';
-import 'main.dart'; // For colors
+import 'glass_widgets.dart';
 
 class ConcentrationPuzzleScreen extends StatefulWidget {
   const ConcentrationPuzzleScreen({super.key});
@@ -69,14 +69,16 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        title: const Text("Time's Up!"),
-        content: Text("Your Focus Score is $_score\nAccuracy: ${(_accuracy * 100).toInt()}%"),
+        backgroundColor: const Color(0xFF1E1E2C),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Time's Up!", style: TextStyle(color: Colors.white)),
+        content: Text("Your Focus Score is $_score\nAccuracy: ${(_accuracy * 100).toInt()}%", style: const TextStyle(color: Colors.white70)),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context); // Close dialog
             },
-            child: const Text("OK", style: TextStyle(color: kPrimaryPurple)),
+            child: const Text("OK", style: TextStyle(color: Color(0xFF8B5CF6))),
           ),
         ],
       ),
@@ -123,287 +125,267 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF8F9FA),
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "Concentration Puzzle",
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            // --- Game Board Card ---
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.grey.shade200),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // Score & Time Header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Focus Score",
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+      body: AnimatedBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                // --- Game Board Card ---
+                GlassCard(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      children: [
+                        // Score & Time Header
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Focus Score",
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.6),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                Text(
+                                  "$_score",
+                                  style: const TextStyle(
+                                    color: Color(0xFF8B5CF6),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 28,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          Text(
-                            "$_score",
-                            style: const TextStyle(
-                              color: kPrimaryPurple,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 28,
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  "Time Left",
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.6),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                Text(
+                                  "00:${_timeLeft.toString().padLeft(2, '0')}",
+                                  style: TextStyle(
+                                    color: _timeLeft <= 5 ? Colors.redAccent : const Color(0xFF8B5CF6),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 28,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          const Text(
-                            "Time Left",
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          Text(
-                            "00:${_timeLeft.toString().padLeft(2, '0')}",
-                            style: TextStyle(
-                              color: _timeLeft <= 5 ? Colors.red : kPrimaryPurple,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 28,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
 
-                  // 3x3 Grid
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      GridView.count(
-                        crossAxisCount: 3,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        children: List.generate(9, (index) {
-                          return GestureDetector(
-                            onTap: () => _onGridTapped(index),
-                            child: _buildGridItem("${index + 1}", 
-                                isDark: index % 2 != 0, 
-                                isActive: index == _activeTargetIndex),
-                          );
-                        }),
-                      ),
-                      // Floating target icon decoration
-                      if (!_isPlaying)
-                        Positioned(
-                          bottom: -10,
-                          right: -10,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: kPrimaryPurple,
-                              shape: BoxShape.circle,
+                        // 3x3 Grid
+                        Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            GridView.count(
+                              crossAxisCount: 3,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              mainAxisSpacing: 12,
+                              crossAxisSpacing: 12,
+                              children: List.generate(9, (index) {
+                                return GestureDetector(
+                                  onTap: () => _onGridTapped(index),
+                                  child: _buildGridItem("${index + 1}", 
+                                      isDark: index % 2 != 0, 
+                                      isActive: index == _activeTargetIndex),
+                                );
+                              }),
                             ),
-                            child: const Icon(
-                              Icons.adjust,
+                            // Floating target icon decoration
+                            if (!_isPlaying)
+                              Positioned(
+                                bottom: -10,
+                                right: -10,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF8B5CF6),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF8B5CF6).withOpacity(0.5),
+                                        blurRadius: 8,
+                                        spreadRadius: 2,
+                                      )
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.adjust,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // --- Stats Row ---
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Column(
+                      children: [
+                        Text(
+                          "Current Combo",
+                          style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "${_combo}x",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      height: 40,
+                      width: 1,
+                      color: Colors.white.withOpacity(0.2),
+                    ),
+                    Column(
+                      children: [
+                        Text(
+                          "Accuracy",
+                          style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "${(_accuracy * 100).toInt()}%",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+
+                // --- Binaural Beats Toggle ---
+                GlassCard(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.headphones, color: Color(0xFF8B5CF6)),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            "Binaural Beats",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
                               color: Colors.white,
-                              size: 24,
                             ),
                           ),
                         ),
-                    ],
+                        CupertinoSwitch(
+                          value: _binauralBeatsEnabled,
+                          activeColor: const Color(0xFF8B5CF6),
+                          thumbColor: Colors.white,
+                          trackColor: Colors.white.withOpacity(0.2),
+                          onChanged: (val) {
+                            setState(() {
+                              _binauralBeatsEnabled = val;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
+                ),
+                const SizedBox(height: 16),
 
-            // --- Stats Row ---
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Column(
-                  children: [
-                    const Text(
-                      "Current Combo",
-                      style: TextStyle(color: kTextLightGrey, fontSize: 14),
+                // --- AI Tips Card ---
+                GlassCard(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.lightbulb_outline,
+                                color: Color(0xFF8B5CF6), size: 20),
+                            const SizedBox(width: 8),
+                            const Text(
+                              "AI Tips",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          "Maintain consistent tapping rhythm for higher accuracy bonuses. Deep breaths help!",
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                            height: 1.4,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "${_combo}x",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: kTextDark,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-                Container(
-                  height: 40,
-                  width: 1,
-                  color: Colors.grey.shade300,
-                ),
-                Column(
-                  children: [
-                    const Text(
-                      "Accuracy",
-                      style: TextStyle(color: kTextLightGrey, fontSize: 14),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "${(_accuracy * 100).toInt()}%",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: kTextDark,
-                      ),
-                    ),
-                  ],
-                ),
+                const SizedBox(height: 24),
+                
+                // --- Play Button ---
+                if (!_isPlaying)
+                  GlassButton(
+                    text: "Start Game",
+                    icon: Icons.play_arrow,
+                    onPressed: _startGame,
+                  ),
               ],
             ),
-            const SizedBox(height: 32),
-
-            // --- Binaural Beats Toggle ---
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.headphones, color: kPrimaryPurple),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text(
-                      "Binaural Beats",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: kTextDark,
-                      ),
-                    ),
-                  ),
-                  CupertinoSwitch(
-                    value: _binauralBeatsEnabled,
-                    activeColor: kPrimaryPurple,
-                    onChanged: (val) {
-                      setState(() {
-                        _binauralBeatsEnabled = val;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // --- AI Tips Card ---
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.lightbulb_outline,
-                          color: kPrimaryPurple, size: 20),
-                      const SizedBox(width: 8),
-                      const Text(
-                        "AI Tips",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: kTextDark,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    "Maintain consistent tapping rhythm for higher accuracy bonuses. Deep breaths help!",
-                    style: TextStyle(
-                      color: kTextLightGrey,
-                      height: 1.4,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            
-            // --- Play Button ---
-            if (!_isPlaying)
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton.icon(
-                  onPressed: _startGame,
-                  icon: const Icon(Icons.play_arrow, color: Colors.white),
-                  label: const Text(
-                    "Start Game",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kPrimaryPurple,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-          ],
+          ),
         ),
       ),
     );
@@ -412,27 +394,28 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
   Widget _buildGridItem(String number, {required bool isDark, required bool isActive}) {
     Color bgColor = isActive 
         ? Colors.orangeAccent // Active target color
-        : (isDark ? kPrimaryPurple.withOpacity(0.5) : kPrimaryPurple);
+        : (isDark ? const Color(0xFF8B5CF6).withOpacity(0.5) : const Color(0xFF8B5CF6).withOpacity(0.8));
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
+        border: Border.all(color: Colors.white.withOpacity(isActive ? 0.8 : 0.2)),
+        boxShadow: isActive ? [
           BoxShadow(
-            color: kPrimaryPurple.withOpacity(0.2),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.orangeAccent.withOpacity(0.5),
+            blurRadius: 8,
+            spreadRadius: 2,
           ),
-        ],
+        ] : [],
       ),
       alignment: Alignment.center,
       child: Text(
         number,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 20,
+          fontSize: 24,
           fontWeight: FontWeight.bold,
         ),
       ),

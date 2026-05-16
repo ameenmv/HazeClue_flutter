@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'main.dart'; // For colors
-
 import 'api_service.dart';
+import 'glass_widgets.dart';
 
 class MyDevicesScreen extends StatefulWidget {
   const MyDevicesScreen({super.key});
@@ -36,7 +35,6 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
       _scannedDevices.clear();
     });
 
-    // Simulate bluetooth scan delay
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
         setState(() {
@@ -55,14 +53,12 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
       await ApiService.addDevice(name, mac);
       _loadDevices();
       setState(() {
-         // remove it from scanned list if we wanted to be super realistic
          _scannedDevices.removeWhere((d) => d['mac'] == mac);
       });
+      if (mounted) showGlassToast(context, "Device connected successfully", isError: false);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
-      );
+      showGlassToast(context, e.toString().replaceAll('Exception: ', ''));
     }
   }
 
@@ -70,178 +66,192 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
     try {
       await ApiService.deleteDevice(id);
       _loadDevices();
+      if (mounted) showGlassToast(context, "Device removed successfully", isError: false);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
-      );
+      showGlassToast(context, e.toString().replaceAll('Exception: ', ''));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF8F9FA),
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "My Devices",
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // --- Device Categories ---
-            const Text(
-              "Device Categories",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: kTextDark,
-              ),
-            ),
-            const SizedBox(height: 16),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: List.generate(
-                  _categories.length,
-                  (index) => Padding(
-                    padding: const EdgeInsets.only(right: 12.0),
-                    child: ChoiceChip(
-                      label: Text(_categories[index]),
-                      selected: _selectedCategory == index,
-                      onSelected: (bool selected) {
-                        setState(() {
-                          _selectedCategory = index;
-                        });
-                      },
-                      selectedColor: kPrimaryPurple,
-                      backgroundColor: Colors.white,
-                      labelStyle: TextStyle(
-                        color: _selectedCategory == index
-                            ? Colors.white
-                            : Colors.grey.shade600,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: BorderSide(
-                          color: _selectedCategory == index
-                              ? kPrimaryPurple
-                              : Colors.transparent,
+      body: AnimatedBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // --- Device Categories ---
+                const Text(
+                  "Device Categories",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: List.generate(
+                      _categories.length,
+                      (index) => Padding(
+                        padding: const EdgeInsets.only(right: 12.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedCategory = index;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: _selectedCategory == index 
+                                  ? const Color(0xFF8B5CF6) 
+                                  : Colors.white.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: _selectedCategory == index 
+                                    ? const Color(0xFF8B5CF6) 
+                                    : Colors.white.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (_selectedCategory == index) ...[
+                                  const Icon(Icons.check, size: 16, color: Colors.white),
+                                  const SizedBox(width: 4),
+                                ],
+                                Text(
+                                  _categories[index],
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(_selectedCategory == index ? 1.0 : 0.7),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 32),
+                const SizedBox(height: 32),
 
-            const Text(
-              "Connected Devices",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: kTextDark,
-              ),
-            ),
-            const SizedBox(height: 16),
-            FutureBuilder<List<dynamic>>(
-              future: _devicesFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return const Center(child: Text("Error loading devices"));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Text("No devices connected.");
-                }
-                final devices = snapshot.data!;
-                return Column(
-                  children: devices.map((d) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: _buildConnectedDeviceItem(
-                        id: d['id'],
-                        icon: Icons.psychology_outlined,
-                        name: d['name'] ?? "Unknown Device",
-                        model: d['macAddress'] ?? "Unknown MAC",
-                        battery: "ca. 85%", // mock
-                        signal: "good", // mock
-                      ),
-                    );
-                  }).toList(),
-                );
-              },
-            ),
-            const SizedBox(height: 32),
-
-            // --- Available Devices ---
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
                 const Text(
-                  "Available Devices",
+                  "Connected Devices",
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: kTextDark,
+                    color: Colors.white,
                   ),
                 ),
-                TextButton.icon(
-                  onPressed: _isScanning ? null : _startScan,
-                  icon: _isScanning 
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) 
-                    : const Icon(Icons.bluetooth_searching),
-                  label: Text(_isScanning ? "Scanning..." : "Scan"),
-                  style: TextButton.styleFrom(foregroundColor: kPrimaryPurple),
-                )
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (_scannedDevices.isEmpty && !_isScanning)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade300),
+                const SizedBox(height: 16),
+                FutureBuilder<List<dynamic>>(
+                  future: _devicesFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator(color: Colors.white));
+                    } else if (snapshot.hasError) {
+                      return const Center(child: Text("Error loading devices", style: TextStyle(color: Colors.redAccent)));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: Text("No devices connected.", style: TextStyle(color: Colors.white.withOpacity(0.6))),
+                      );
+                    }
+                    final devices = snapshot.data!;
+                    return Column(
+                      children: devices.map((d) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: _buildConnectedDeviceItem(
+                            id: d['id'],
+                            icon: Icons.psychology_outlined,
+                            name: d['name'] ?? "Unknown Device",
+                            model: d['macAddress'] ?? "Unknown MAC",
+                            battery: "ca. 85%", // mock
+                            signal: "good", // mock
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  },
                 ),
-                child: const Column(
+                const SizedBox(height: 32),
+
+                // --- Available Devices ---
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.bluetooth_disabled, color: Colors.grey, size: 40),
-                    SizedBox(height: 8),
-                    Text("No devices found", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)),
-                    Text("Tap scan to search for nearby headsets", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                    const Text(
+                      "Available Devices",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    TextButton.icon(
+                      onPressed: _isScanning ? null : _startScan,
+                      icon: _isScanning 
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF8B5CF6))) 
+                        : const Icon(Icons.bluetooth_searching, color: Color(0xFF8B5CF6)),
+                      label: Text(_isScanning ? "Scanning..." : "Scan", style: const TextStyle(color: Color(0xFF8B5CF6), fontWeight: FontWeight.bold)),
+                    )
                   ],
                 ),
-              ),
-            ..._scannedDevices.map((device) => Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: _buildAvailableDeviceItem(
-                icon: Icons.psychology,
-                name: device['name']!,
-                signal: "good",
-                onTap: () => _connectDevice(device['name']!, device['mac']!),
-              ),
-            )),
-          ],
+                const SizedBox(height: 16),
+                if (_scannedDevices.isEmpty && !_isScanning)
+                  GlassCard(
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        children: [
+                          Icon(Icons.bluetooth_disabled, color: Colors.white.withOpacity(0.5), size: 40),
+                          const SizedBox(height: 8),
+                          Text("No devices found", style: TextStyle(color: Colors.white.withOpacity(0.7), fontWeight: FontWeight.w500)),
+                          Text("Tap scan to search for nearby headsets", style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ..._scannedDevices.map((device) => Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: _buildAvailableDeviceItem(
+                    icon: Icons.psychology,
+                    name: device['name']!,
+                    signal: "good",
+                    onTap: () => _connectDevice(device['name']!, device['mac']!),
+                  ),
+                )),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -255,82 +265,68 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
     required String battery,
     required String signal,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 32, color: Colors.black87),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: kTextDark,
-                    fontSize: 15,
-                  ),
-                ),
-                Text(
-                  model,
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(Icons.battery_charging_full,
-                        size: 14, color: kSuccessGreen),
-                    const SizedBox(width: 4),
-                    Text(
-                      battery,
-                      style: const TextStyle(
-                          color: kSuccessGreen, fontSize: 12),
-                    ),
-                    const SizedBox(width: 12),
-                    const Icon(Icons.wifi, size: 14, color: kSuccessGreen),
-                    const SizedBox(width: 4),
-                    const Text(
-                      "Connected",
-                      style: TextStyle(
-                          color: kSuccessGreen, fontSize: 12),
-                    ),
-                    const SizedBox(width: 12),
-                    const Icon(Icons.signal_cellular_alt,
-                        size: 14, color: kSuccessGreen),
-                    const SizedBox(width: 4),
-                    Text(
-                      signal,
-                      style: const TextStyle(
-                          color: kSuccessGreen, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ],
+    return GlassCard(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 28, color: Colors.white),
             ),
-          ),
-          const Icon(Icons.settings_outlined, color: Colors.black87, size: 20),
-          const SizedBox(width: 12),
-          GestureDetector(
-            onTap: () => _removeDevice(id),
-            child: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-          ),
-        ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    model,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.6),
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.battery_charging_full, size: 14, color: Colors.greenAccent),
+                      const SizedBox(width: 4),
+                      Text(
+                        battery,
+                        style: const TextStyle(color: Colors.greenAccent, fontSize: 12),
+                      ),
+                      const SizedBox(width: 12),
+                      const Icon(Icons.wifi, size: 14, color: Colors.greenAccent),
+                      const SizedBox(width: 4),
+                      const Text(
+                        "Connected",
+                        style: TextStyle(color: Colors.greenAccent, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.settings_outlined, color: Colors.white, size: 20),
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: () => _removeDevice(id),
+              child: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -343,43 +339,48 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 32, color: Colors.black87),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                name,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: kTextDark,
-                  fontSize: 15,
+      child: GlassCard(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 28, color: Colors.white),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
                 ),
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: kPrimaryPurple.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Text(
-                "Connect",
-                style: TextStyle(
-                  color: kPrimaryPurple,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8B5CF6).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFF8B5CF6).withOpacity(0.5)),
+                ),
+                child: const Text(
+                  "Connect",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

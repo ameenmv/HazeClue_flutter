@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'main.dart'; // For colors
+import 'glass_widgets.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
@@ -7,52 +7,64 @@ class PrivacyPolicyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "Privacy Policy",
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSection(
-              title: "1. Types data we collect",
-              content:
-                  "We collect only the data needed to provide you with a personalized and safe focus-tracking experience.\n"
-                  "This may include your focus activity, app interactions, and optional cognitive training preferences.\n"
-                  "We do not collect any unnecessary or sensitive data.",
+      body: AnimatedBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: GlassCard(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSection(
+                      title: "1. Types data we collect",
+                      content:
+                          "We collect only the data needed to provide you with a personalized and safe focus-tracking experience.\n"
+                          "This may include your focus activity, app interactions, and optional cognitive training preferences.\n"
+                          "We do not collect any unnecessary or sensitive data.",
+                    ),
+                    const SizedBox(height: 24),
+                    _buildDivider(),
+                    const SizedBox(height: 24),
+                    _buildSection(
+                      title: "2. Use of your personal data",
+                      content:
+                          "Your data is used to improve your cognitive insights, deliver real-time focus monitoring, and personalize training tools such as exercises and binaural beats.\n"
+                          "All recommendations are generated safely using our RAG-based AI engine. Your information is never used for advertising or shared without your consent.",
+                    ),
+                    const SizedBox(height: 24),
+                    _buildDivider(),
+                    const SizedBox(height: 24),
+                    _buildSection(
+                      title: "3. Disclosure of your personal data",
+                      content:
+                          "We do not share your personal data with third parties unless required to maintain core app functionality or when you explicitly choose to enable optional features such as adaptive tDCS.\n"
+                          "All data is processed with strict client-side safety controls to ensure full protection and transparency.",
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 24),
-            _buildSection(
-              title: "2. Use of your personal data",
-              content:
-                  "Your data is used to improve your cognitive insights, deliver real-time focus monitoring, and personalize training tools such as exercises and binaural beats.\n"
-                  "All recommendations are generated safely using our RAG-based AI engine. Your information is never used for advertising or shared without your consent.",
-            ),
-            const SizedBox(height: 24),
-            _buildSection(
-              title: "3. Disclosure of your personal data",
-              content:
-                  "We do not share your personal data with third parties unless required to maintain core app functionality or when you explicitly choose to enable optional features such as adaptive tDCS.\n"
-                  "All data is processed with strict client-side safety controls to ensure full protection and transparency.",
-            ),
-            const SizedBox(height: 32),
-          ],
+          ),
         ),
       ),
     );
@@ -65,21 +77,29 @@ class PrivacyPolicyScreen extends StatelessWidget {
         Text(
           title,
           style: const TextStyle(
-            fontSize: 16,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: kTextDark,
+            color: Colors.white,
           ),
         ),
         const SizedBox(height: 12),
         Text(
           content,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 15,
-            color: kTextDark,
+            color: Colors.white.withOpacity(0.8),
             height: 1.5, // Line height for readability
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildDivider() {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      color: Colors.white.withOpacity(0.1),
     );
   }
 }

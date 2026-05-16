@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'api_service.dart';
 import 'concentration_puzzle_screen.dart';
 import 'memory_training_screen.dart';
-import 'main.dart';
+import 'glass_widgets.dart';
+import 'utils/transitions.dart';
 
 class TrainingScreen extends StatefulWidget {
   const TrainingScreen({super.key});
@@ -48,9 +48,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
     } catch (e) {
       debugPrint("Failed to save intensity: $e");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to save settings: $e")),
-        );
+        showGlassToast(context, "Failed to save settings: $e");
       }
     }
   }
@@ -61,20 +59,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         _currentlyPlaying = null; // Pause
       } else {
         _currentlyPlaying = title; // Play
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.music_note, color: Colors.white),
-                const SizedBox(width: 8),
-                Text("Now playing: $title..."),
-              ],
-            ),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: kPrimaryPurple,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+        showGlassToast(context, "Now playing: $title...", isError: false);
       }
     });
   }
@@ -82,22 +67,22 @@ class _TrainingScreenState extends State<TrainingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.transparent, // Background transparent to let AnimatedBackground show
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        centerTitle: true,
         title: const Text(
           "Training & Setting",
-          style: TextStyle(color: kTextDark, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
       body: ListView(
-        // Naturally scrollable
         padding: const EdgeInsets.all(24),
         children: [
           const Text(
             "Cognitive Training Modules",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 16),
           _trainingItem(
@@ -107,7 +92,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const ConcentrationPuzzleScreen()),
+                GlassPageRoute(page: const ConcentrationPuzzleScreen()),
               );
             },
           ),
@@ -118,15 +103,15 @@ class _TrainingScreenState extends State<TrainingScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const MemoryTrainingScreen()),
+                GlassPageRoute(page: const MemoryTrainingScreen()),
               );
             },
           ),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 40),
           const Text(
             "Binaural Beats Presets",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 16),
           _audioPresetCard(
@@ -140,14 +125,14 @@ class _TrainingScreenState extends State<TrainingScreen> {
             "Enhances creative thinking",
           ),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 40),
           const Text(
             "tDCS Settings",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 16),
           _isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(child: CircularProgressIndicator(color: Colors.white))
               : _buildTDCSSettings(),
           const SizedBox(height: 100), // Padding for bottom nav
         ],
@@ -159,122 +144,163 @@ class _TrainingScreenState extends State<TrainingScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade100),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: kPrimaryPurple),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        margin: const EdgeInsets.only(bottom: 16),
+        child: GlassCard(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: const Color(0xFF8B5CF6), size: 28),
                 ),
-                Text(
-                  sub,
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        sub,
+                        style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13),
+                      ),
+                    ],
+                  ),
                 ),
+                Icon(Icons.chevron_right, color: Colors.white.withOpacity(0.5)),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right, color: Colors.grey),
-        ],
-      ),
+        ),
       ),
     );
   }
 
   Widget _audioPresetCard(String title, String time, String desc) {
+    bool isPlaying = _currentlyPlaying == title;
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: kPrimaryPurple.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      margin: const EdgeInsets.only(bottom: 16),
+      child: GlassCard(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      desc,
+                      style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF8B5CF6).withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        time,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF8B5CF6),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Text(
-                desc,
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                time,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: kPrimaryPurple,
+              GestureDetector(
+                onTap: () => _toggleAudio(title),
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: isPlaying ? Colors.redAccent : const Color(0xFF8B5CF6),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isPlaying ? Colors.redAccent : const Color(0xFF8B5CF6)).withOpacity(0.4),
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    isPlaying ? Icons.pause : Icons.play_arrow,
+                    color: Colors.white,
+                    size: 28,
+                  ),
                 ),
               ),
             ],
           ),
-          GestureDetector(
-            onTap: () => _toggleAudio(title),
-            child: CircleAvatar(
-              backgroundColor: _currentlyPlaying == title ? Colors.redAccent : kPrimaryPurple,
-              child: Icon(
-                _currentlyPlaying == title ? Icons.pause : Icons.play_arrow,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildTDCSSettings() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Intensity Level",
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              Text(
-                "${(_intensityLevel * 100).toInt()}%",
-                style: const TextStyle(
-                  color: kPrimaryPurple,
-                  fontWeight: FontWeight.bold,
+    return GlassCard(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Intensity Level",
+                  style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 16),
                 ),
+                Text(
+                  "${(_intensityLevel * 100).toInt()}%",
+                  style: const TextStyle(
+                    color: Color(0xFF8B5CF6),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                activeTrackColor: const Color(0xFF8B5CF6),
+                inactiveTrackColor: Colors.white.withOpacity(0.1),
+                thumbColor: Colors.white,
+                overlayColor: const Color(0xFF8B5CF6).withOpacity(0.2),
+                trackHeight: 6.0,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12.0),
               ),
-            ],
-          ),
-          Slider(
-            value: _intensityLevel,
-            onChanged: _updateIntensity,
-            onChangeEnd: _saveIntensity,
-            activeColor: kPrimaryPurple,
-            inactiveColor: kPrimaryPurple.withOpacity(0.1),
-          ),
-        ],
+              child: Slider(
+                value: _intensityLevel,
+                onChanged: _updateIntensity,
+                onChangeEnd: _saveIntensity,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

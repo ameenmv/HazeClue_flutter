@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'main.dart'; // For colors
-import 'edit_profile_screen.dart';
-import 'edit_profile_screen.dart';
 import 'edit_profile_screen.dart';
 import 'notifications_screen.dart';
 import 'notification_inbox_screen.dart';
@@ -9,7 +6,9 @@ import 'help_support_screen.dart';
 import 'contact_us_screen.dart';
 import 'account_security_screen.dart';
 import 'privacy_policy_screen.dart';
-import 'intro_screen.dart'; // Added for logout navigation
+import 'intro_screen.dart';
+import 'glass_widgets.dart';
+import 'utils/transitions.dart';
 
 import 'api_service.dart';
 
@@ -43,26 +42,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), // Off-white background
+      backgroundColor: Colors.transparent, // Let AnimatedBackground show through
       body: SingleChildScrollView(
         child: Stack(
           alignment: Alignment.topCenter,
           children: [
-            // --- Purple Curved Background ---
-            Container(
-              height: 280,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: kPrimaryPurple,
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.elliptical(
-                    MediaQuery.of(context).size.width,
-                    60,
-                  ),
-                ),
-              ),
-            ),
-
             // --- Top App Bar Icons ---
             SafeArea(
               child: Padding(
@@ -71,12 +55,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.notifications_none, color: Colors.black87),
+                      icon: const Icon(Icons.notifications_none, color: Colors.white),
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => const NotificationInboxScreen(),
+                          GlassPageRoute(
+                            page: const NotificationInboxScreen(),
                           ),
                         );
                       },
@@ -84,11 +68,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.history, color: Colors.black87),
+                          icon: const Icon(Icons.history, color: Colors.white),
                           onPressed: () {},
                         ),
                         IconButton(
-                          icon: const Icon(Icons.more_vert, color: Colors.black87),
+                          icon: const Icon(Icons.more_vert, color: Colors.white),
                           onPressed: () {},
                         ),
                       ],
@@ -101,22 +85,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // --- Profile Content ---
             Column(
               children: [
-                const SizedBox(height: 180), // Push down to overlap the curve
+                const SizedBox(height: 80),
 
                 // --- Avatar ---
                 Stack(
                   alignment: Alignment.bottomRight,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(4), // White border effect
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                            blurRadius: 20,
+                            spreadRadius: 2,
+                          )
+                        ],
                       ),
                       child: const CircleAvatar(
-                        radius: 50,
+                        radius: 55,
                         backgroundImage: AssetImage('assets/images/Intro.png'), // Placeholder
-                        backgroundColor: Colors.grey,
+                        backgroundColor: Colors.transparent,
                       ),
                     ),
                     // Edit Icon
@@ -124,56 +115,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onTap: () async {
                         await Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => const EditProfileScreen(),
+                          GlassPageRoute(
+                            page: const EditProfileScreen(),
                           ),
                         );
                         _loadProfile(); // Refresh profile after editing
                       },
                       child: Container(
-                        padding: const EdgeInsets.all(6),
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: const Color(0xFF8B5CF6),
                           shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+                          border: Border.all(color: const Color(0xFF1E1E2A), width: 2),
                         ),
                         child: const Icon(
                           Icons.edit_outlined,
-                          size: 20,
-                          color: Colors.black87,
+                          size: 18,
+                          color: Colors.white,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
 
                 // --- User Info ---
                 Text(
                   _profile?['fullName'] ?? "Loading...",
                   style: const TextStyle(
-                    fontSize: 24,
+                    fontSize: 26,
                     fontWeight: FontWeight.bold,
-                    color: kTextDark,
+                    color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
                   _profile?['email'] ?? "loading@example.com",
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: kTextDark, // Dark text in the design
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.white.withOpacity(0.7),
                     height: 1.4,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
 
                 // --- Menu Groups ---
                 Padding(
@@ -188,13 +173,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () async {
                             await Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (_) => const EditProfileScreen(),
+                              GlassPageRoute(
+                                page: const EditProfileScreen(),
                               ),
                             );
                             _loadProfile(); // Refresh profile after editing
                           },
                         ),
+                        _buildDivider(),
                         _buildMenuItem(
                           icon: Icons.notifications_none,
                           title: "Notifications",
@@ -202,12 +188,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (_) => const NotificationsScreen(),
+                              GlassPageRoute(
+                                page: const NotificationsScreen(),
                               ),
                             );
                           },
                         ),
+                        _buildDivider(),
                         _buildMenuItem(
                           icon: Icons.language,
                           title: "Language",
@@ -215,7 +202,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () {},
                         ),
                       ]),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
 
                       // Group 2
                       _buildMenuGroup([
@@ -225,20 +212,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (_) => const AccountSecurityScreen(),
+                              GlassPageRoute(
+                                page: const AccountSecurityScreen(),
                               ),
                             );
                           },
                         ),
+                        _buildDivider(),
                         _buildMenuItem(
-                          icon: Icons.palette_outlined, // Better icon for theme
+                          icon: Icons.palette_outlined,
                           title: "Theme",
-                          trailingText: "Light mode",
+                          trailingText: "Dark glass",
                           onTap: () {},
                         ),
                       ]),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
 
                       // Group 3
                       _buildMenuGroup([
@@ -248,79 +236,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (_) => const HelpSupportScreen(),
+                              GlassPageRoute(
+                                page: const HelpSupportScreen(),
                               ),
                             );
                           },
                         ),
+                        _buildDivider(),
                         _buildMenuItem(
                           icon: Icons.chat_bubble_outline,
                           title: "Contact us",
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (_) => const ContactUsScreen(),
+                              GlassPageRoute(
+                                page: const ContactUsScreen(),
                               ),
                             );
                           },
                         ),
+                        _buildDivider(),
                         _buildMenuItem(
                           icon: Icons.lock_outline,
                           title: "Privacy policy",
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (_) => const PrivacyPolicyScreen(),
+                              GlassPageRoute(
+                                page: const PrivacyPolicyScreen(),
                               ),
                             );
                           },
                         ),
                       ]),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
                       
                       // --- Logout Button ---
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            await ApiService.logout();
-                            if (!mounted) return;
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(builder: (_) => const IntroScreen()),
-                              (route) => false,
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              side: const BorderSide(color: Colors.redAccent),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.logout, color: Colors.redAccent),
-                              SizedBox(width: 8),
-                              Text(
-                                "Logout",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.redAccent,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                      GlassButton(
+                        text: "Logout",
+                        isOutlined: true,
+                        onPressed: () async {
+                          await ApiService.logout();
+                          if (!mounted) return;
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            GlassPageRoute(page: const IntroScreen()),
+                            (route) => false,
+                          );
+                        },
                       ),
-                      const SizedBox(height: 32), // Bottom padding
+                      const SizedBox(height: 100), // Bottom padding for nav bar
                     ],
                   ),
                 ),
@@ -332,27 +297,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Helper method to build a card containing menu items
   Widget _buildMenuGroup(List<Widget> children) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return GlassCard(
       child: Column(
         children: children,
       ),
     );
   }
 
-  // Helper method to build individual menu rows
+  Widget _buildDivider() {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      color: Colors.white.withOpacity(0.1),
+      indent: 16,
+      endIndent: 16,
+    );
+  }
+
   Widget _buildMenuItem({
     required IconData icon,
     required String title,
@@ -361,12 +323,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16), // Match container radius for ripple
+      borderRadius: BorderRadius.circular(30), // Match GlassCard
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
         child: Row(
           children: [
-            Icon(icon, color: Colors.black87, size: 24),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: Colors.white, size: 22),
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
@@ -374,7 +343,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: kTextDark,
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -383,10 +352,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 trailingText,
                 style: const TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: kPrimaryPurple, // Purple text for states like "ON" or "English"
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF8B5CF6),
                 ),
-              ),
+              )
+            else
+              Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white.withOpacity(0.4)),
           ],
         ),
       ),

@@ -1,6 +1,8 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'main.dart';
-import 'shared_widgets.dart';
+import 'main.dart'; // Keeping for global keys/theme if needed
+import 'glass_widgets.dart';
+import 'shared_widgets.dart' show SocialButton;
 import 'sign_up_screen.dart';
 import 'forgot_password_screen.dart';
 import 'survey_intro_screen.dart';
@@ -14,25 +16,35 @@ class SignInScreen extends StatefulWidget {
   State<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> {
+class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderStateMixin {
   bool _isRememberMeChecked = false;
   bool _isLoading = false;
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
+    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOutCubic);
+    _fadeController.forward();
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 
   Future<void> _handleSignIn() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your email and password')),
-      );
+      showGlassToast(context, 'Please enter your email and password');
       return;
     }
 
@@ -60,9 +72,7 @@ class _SignInScreenState extends State<SignInScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
-      );
+      showGlassToast(context, e.toString().replaceAll('Exception: ', ''));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -71,146 +81,205 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 10),
-              Center(
-                child: Image.asset(
-                  'assets/images/hazecluelogo.jpeg',
-                  height: 160,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                "Sign In",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: kTextDark,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                "Hi Welcome back, you've been missed",
-                style: TextStyle(color: kTextLightGrey, fontSize: 14),
-              ),
-              const SizedBox(height: 30),
-              CustomTextField(
-                label: "Email",
-                hint: "example@gmail.com",
-                prefixIcon: Icons.email_outlined,
-                controller: _emailController,
-              ),
-              const SizedBox(height: 20),
-              CustomTextField(
-                label: "Password",
-                hint: "****************",
-                prefixIcon: Icons.lock_outline,
-                isPassword: true,
-                controller: _passwordController,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: Checkbox(
-                          value: _isRememberMeChecked,
-                          onChanged: (value) => setState(
-                            () => _isRememberMeChecked = value ?? false,
+      extendBodyBehindAppBar: true,
+      body: AnimatedBackground(
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: SlideTransition(
+                  position: Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(_fadeAnimation),
+                  child: GlassCard(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // App Logo / Title
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 20,
+                                )
+                              ]
+                            ),
+                            child: const Icon(Icons.psychology, size: 64, color: Colors.white),
                           ),
-                          activeColor: kPrimaryPurple,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
+                          const SizedBox(height: 24),
+                          const Text(
+                            "Welcome Back",
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 1.2,
+                            ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        "Remember me",
-                        style: TextStyle(
-                          color: kTextDark,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const ForgotPasswordScreen(),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Log in to continue your journey",
+                            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+                          ),
+                          const SizedBox(height: 40),
+                          
+                          // Inputs
+                          GlassTextField(
+                            label: "Email",
+                            hint: "example@gmail.com",
+                            icon: Icons.email_outlined,
+                            controller: _emailController,
+                          ),
+                          const SizedBox(height: 20),
+                          GlassTextField(
+                            label: "Password",
+                            hint: "••••••••",
+                            icon: Icons.lock_outline,
+                            isPassword: true,
+                            controller: _passwordController,
+                          ),
+                          const SizedBox(height: 20),
+                          
+                          // Options
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: Checkbox(
+                                      value: _isRememberMeChecked,
+                                      onChanged: (value) => setState(
+                                        () => _isRememberMeChecked = value ?? false,
+                                      ),
+                                      activeColor: const Color(0xFF6366F1),
+                                      checkColor: Colors.white,
+                                      side: BorderSide(color: Colors.white.withOpacity(0.5)),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    "Remember me",
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.9),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              GestureDetector(
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const ForgotPasswordScreen(),
+                                  ),
+                                ),
+                                child: const Text(
+                                  "Forgot Password?",
+                                  style: TextStyle(
+                                    color: Color(0xFF818CF8),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 40),
+                          
+                          // Sign In Button
+                          _isLoading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : GlassButton(text: "Sign In", onPressed: _handleSignIn),
+                          
+                          const SizedBox(height: 30),
+                          Row(
+                            children: [
+                              Expanded(child: Divider(color: Colors.white.withOpacity(0.2))),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text("Or sign in with", style: TextStyle(color: Colors.white.withOpacity(0.5))),
+                              ),
+                              Expanded(child: Divider(color: Colors.white.withOpacity(0.2))),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          
+                          // Social Icons
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildGlassSocial(Icons.facebook, Colors.blueAccent),
+                              const SizedBox(width: 20),
+                              _buildGlassSocial(Icons.g_mobiledata, Colors.redAccent),
+                              const SizedBox(width: 20),
+                              _buildGlassSocial(Icons.apple, Colors.white),
+                            ],
+                          ),
+                          const SizedBox(height: 40),
+                          
+                          // Footer
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Don't have an account? ",
+                                style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                              ),
+                              GestureDetector(
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const SignUpScreen()),
+                                ),
+                                child: const Text(
+                                  "Sign up",
+                                  style: TextStyle(
+                                    color: Color(0xFF818CF8),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    child: const Text(
-                      "Forgot Password?",
-                      style: TextStyle(
-                        color: kPrimaryPurple,
-                        fontWeight: FontWeight.w600,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 30),
-              _isLoading
-                  ? const CircularProgressIndicator(color: kPrimaryPurple)
-                  : PrimaryButton(text: "Sign In", onPressed: _handleSignIn),
-              const SizedBox(height: 30),
-              const Center(
-                child: Text(
-                  "Or sign in with",
-                  style: TextStyle(color: kTextLightGrey),
                 ),
               ),
-              const SizedBox(height: 20),
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SocialButton(icon: Icons.facebook, color: Colors.blue),
-                  SizedBox(width: 20),
-                  SocialButton(icon: Icons.g_mobiledata, color: Colors.red),
-                  SizedBox(width: 20),
-                  SocialButton(icon: Icons.apple, color: Colors.black),
-                ],
-              ),
-              const SizedBox(height: 40),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    "create a new account? ",
-                    style: TextStyle(color: kTextDark),
-                  ),
-                  GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const SignUpScreen()),
-                    ),
-                    child: const Text(
-                      "Sign up",
-                      style: TextStyle(
-                        color: kPrimaryPurple,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
+
+  Widget _buildGlassSocial(IconData icon, Color color) {
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        shape: BoxShape.circle,
+      ),
+      child: Center(child: Icon(icon, color: color, size: 28)),
+    );
+  }
 }
+
+// -----------------------------------------------------------------
+// PREMIUM UI COMPONENTS (Phase 1)
+// These have been migrated to glass_widgets.dart
+// -----------------------------------------------------------------

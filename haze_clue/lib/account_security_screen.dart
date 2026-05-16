@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'main.dart'; // For colors
 import 'api_service.dart';
 import 'intro_screen.dart';
 import 'change_password_screen.dart';
+import 'glass_widgets.dart';
 
 class AccountSecurityScreen extends StatefulWidget {
   const AccountSecurityScreen({super.key});
@@ -58,8 +58,9 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
     try {
       await ApiService.revokeSession(id);
       _loadSessions(); // Refresh list
+      if (mounted) showGlassToast(context, "Session revoked successfully", isError: false);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) showGlassToast(context, e.toString());
     }
   }
 
@@ -67,262 +68,258 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
     try {
       await ApiService.revokeOtherSessions();
       _loadSessions(); // Refresh list
+      if (mounted) showGlassToast(context, "Other sessions revoked successfully", isError: false);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) showGlassToast(context, e.toString());
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "Account Security",
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // --- Account Management ---
-            _buildSectionTitle("Account Management"),
-            const SizedBox(height: 12),
-            _buildContainer(
-              child: ListTile(
-                title: const Text(
-                  "Change password",
-                  style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: kTextDark),
-                ),
-                trailing: const Icon(Icons.arrow_forward_ios,
-                    size: 16, color: Colors.grey),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const ChangePasswordScreen(),
+      body: AnimatedBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // --- Account Management ---
+                _buildSectionTitle("Account Management"),
+                const SizedBox(height: 12),
+                GlassCard(
+                  child: ListTile(
+                    title: const Text(
+                      "Change password",
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white),
                     ),
-                  );
-                },
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-              ),
-            ),
-            const SizedBox(height: 24),
+                    trailing: Icon(Icons.arrow_forward_ios,
+                        size: 16, color: Colors.white.withOpacity(0.5)),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ChangePasswordScreen(),
+                        ),
+                      );
+                    },
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                  ),
+                ),
+                const SizedBox(height: 24),
 
-            // --- Authentication ---
-            _buildSectionTitle("Authentication"),
-            const SizedBox(height: 12),
-            _buildContainer(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
+                // --- Authentication ---
+                _buildSectionTitle("Authentication"),
+                const SizedBox(height: 12),
+                GlassCard(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Two-factor authentication",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                "Set up two-factor authentication",
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white.withOpacity(0.6),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        CupertinoSwitch(
+                          value: _isTwoFactorEnabled,
+                          activeColor: const Color(0xFF8B5CF6),
+                          thumbColor: Colors.white,
+                          trackColor: Colors.white.withOpacity(0.2),
+                          onChanged: (val) {
+                            setState(() {
+                              _isTwoFactorEnabled = val;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // --- Active Sessions ---
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Two-factor authentication",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: kTextDark,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            "Set up two-factor authentication",
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: kPrimaryPurple.withOpacity(0.8),
-                            ),
-                          ),
-                        ],
+                    _buildSectionTitle("Active Sessions"),
+                    GestureDetector(
+                      onTap: _revokeOtherSessions,
+                      child: const Text(
+                        "Sign out of all other devices",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF8B5CF6),
+                        ),
                       ),
-                    ),
-                    CupertinoSwitch(
-                      value: _isTwoFactorEnabled,
-                      activeColor: kPrimaryPurple,
-                      onChanged: (val) {
-                        setState(() {
-                          _isTwoFactorEnabled = val;
-                        });
-                      },
                     ),
                   ],
                 ),
-              ),
-            ),
-            const SizedBox(height: 24),
+                const SizedBox(height: 12),
+                _isLoadingSessions 
+                  ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                  : _sessions.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("No active sessions found.", style: TextStyle(color: Colors.white.withOpacity(0.7))),
+                      )
+                    : GlassCard(
+                        child: Column(
+                          children: _sessions.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final session = entry.value;
+                            final isCurrent = session['isCurrent'] == true;
+                            
+                            return Column(
+                              children: [
+                                _buildSessionItem(
+                                  id: session['id'],
+                                  deviceName: session['deviceName'] + (isCurrent ? " (Current)" : ""),
+                                  location: session['location'] ?? "Unknown Location",
+                                  time: "Started: ${DateTime.parse(session['loginTime']).toLocal().toString().split('.')[0]}",
+                                  isCurrent: isCurrent,
+                                ),
+                                if (index < _sessions.length - 1)
+                                  Divider(color: Colors.white.withOpacity(0.1), height: 1),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                const SizedBox(height: 32),
 
-            // --- Active Sessions ---
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildSectionTitle("Active Sessions"),
-                GestureDetector(
-                  onTap: _revokeOtherSessions,
-                  child: Text(
-                    "Sign out of all other devices",
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: kPrimaryPurple.withOpacity(0.9),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _isLoadingSessions 
-              ? const Center(child: CircularProgressIndicator())
-              : _sessions.isEmpty
-                ? const Text("No active sessions found.")
-                : _buildContainer(
+                // --- Recent Security Activity ---
+                _buildSectionTitle("Recent Security Activity"),
+                const SizedBox(height: 12),
+                _isLoadingLogs
+                  ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                  : _securityLogs.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("No recent security activity.", style: TextStyle(color: Colors.white.withOpacity(0.7))),
+                      )
+                    : GlassCard(
+                        child: Column(
+                          children: _securityLogs.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final log = entry.value;
+                            final event = log['event'].toString();
+                            final icon = event.toLowerCase().contains("password") 
+                                         ? Icons.shield_outlined 
+                                         : Icons.info_outline;
+
+                            return Column(
+                              children: [
+                                _buildActivityItem(
+                                  icon: icon,
+                                  title: event,
+                                  time: DateTime.parse(log['createdAt']).toLocal().toString().split('.')[0],
+                                ),
+                                if (index < _securityLogs.length - 1)
+                                  Divider(color: Colors.white.withOpacity(0.1), height: 1),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                const SizedBox(height: 32),
+
+                // --- Security Tip ---
+                GlassCard(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
                     child: Column(
-                      children: _sessions.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final session = entry.value;
-                        final isCurrent = session['isCurrent'] == true;
-                        
-                        return Column(
-                          children: [
-                            _buildSessionItem(
-                              id: session['id'],
-                              deviceName: session['deviceName'] + (isCurrent ? " (Current)" : ""),
-                              location: session['location'] ?? "Unknown Location",
-                              time: "Started: ${DateTime.parse(session['loginTime']).toLocal().toString().split('.')[0]}",
-                              isCurrent: isCurrent,
-                            ),
-                            if (index < _sessions.length - 1)
-                              const Divider(color: Color(0xFFEEEEEE), height: 1),
-                          ],
-                        );
-                      }).toList(),
-                    ),
-                  ),
-            const SizedBox(height: 24),
-
-            // --- Recent Security Activity ---
-            _buildSectionTitle("Recent Security Activity"),
-            const SizedBox(height: 12),
-            _isLoadingLogs
-              ? const Center(child: CircularProgressIndicator())
-              : _securityLogs.isEmpty
-                ? const Text("No recent security activity.")
-                : _buildContainer(
-                    child: Column(
-                      children: _securityLogs.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final log = entry.value;
-                        final event = log['event'].toString();
-                        final icon = event.toLowerCase().contains("password") 
-                                     ? Icons.shield_outlined 
-                                     : Icons.info_outline;
-
-                        return Column(
-                          children: [
-                            _buildActivityItem(
-                              icon: icon,
-                              title: event,
-                              time: DateTime.parse(log['createdAt']).toLocal().toString().split('.')[0],
-                            ),
-                            if (index < _securityLogs.length - 1)
-                              const Divider(color: Color(0xFFEEEEEE), height: 1),
-                          ],
-                        );
-                      }).toList(),
-                    ),
-                  ),
-            const SizedBox(height: 24),
-
-            // --- Security Tip ---
-            _buildContainer(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.lightbulb_outline,
-                            color: kPrimaryPurple.withOpacity(0.8), size: 20),
-                        const SizedBox(width: 8),
-                        const Text(
-                          "Security Tip",
+                        Row(
+                          children: [
+                            const Icon(Icons.lightbulb_outline,
+                                color: Color(0xFF8B5CF6), size: 24),
+                            const SizedBox(width: 12),
+                            const Text(
+                              "Security Tip",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          "Regularly review your active sessions and sign out of any unfamiliar devices.",
                           style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: kTextDark,
+                            fontSize: 14,
+                            color: Colors.white.withOpacity(0.8),
+                            height: 1.4,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      "Regularly review your active sessions and sign out of any unfamiliar devices.",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: kTextLightGrey,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 32),
+                const SizedBox(height: 40),
 
-            // --- Log Out Button ---
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: () async {
-                  await ApiService.logout();
-                  if (!mounted) return;
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const IntroScreen()),
-                    (route) => false,
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF44336), // Red color
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
+                // --- Log Out Button ---
+                GlassButton(
+                  text: "Log Out",
+                  isOutlined: true,
+                  onPressed: () async {
+                    await ApiService.logout();
+                    if (!mounted) return;
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const IntroScreen()),
+                      (route) => false,
+                    );
+                  },
                 ),
-                child: const Text(
-                  "Log Out",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+                const SizedBox(height: 16),
+              ],
             ),
-            const SizedBox(height: 16),
-          ],
+          ),
         ),
       ),
     );
@@ -332,21 +329,10 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
     return Text(
       title,
       style: const TextStyle(
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: FontWeight.bold,
-        color: kTextDark,
-      ),
-    );
-  }
-
-  Widget _buildContainer({required Widget child}) {
-    return Container(
-      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
       ),
-      child: child,
     );
   }
 
@@ -358,7 +344,7 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
     required bool isCurrent,
   }) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(20.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -369,25 +355,25 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                 Text(
                   deviceName,
                   style: const TextStyle(
-                    fontSize: 15,
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: kTextDark,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  location,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white.withOpacity(0.6),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  location,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: kTextLightGrey,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
                   time,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: kTextLightGrey,
+                    color: Colors.white.withOpacity(0.6),
                   ),
                 ),
               ],
@@ -396,12 +382,12 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
           if (!isCurrent)
             GestureDetector(
               onTap: () => _revokeSession(id),
-              child: Text(
+              child: const Text(
                 "Sign out",
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: kPrimaryPurple.withOpacity(0.9),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.redAccent,
                 ),
               ),
             ),
@@ -416,12 +402,19 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
     required String time,
   }) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(20.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: kTextDark),
-          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 20, color: Colors.white),
+          ),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -429,18 +422,18 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: kTextDark,
+                    color: Colors.white,
                     height: 1.3,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
                   time,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: kTextLightGrey,
+                    color: Colors.white.withOpacity(0.6),
                   ),
                 ),
               ],

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'main.dart'; // For colors
 import 'api_service.dart';
-import 'shared_widgets.dart';
+import 'glass_widgets.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -17,9 +16,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   Future<void> _submit() async {
     if (_currentPasswordController.text.isEmpty || _newPasswordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields")),
-      );
+      showGlassToast(context, "Please fill all fields");
       return;
     }
 
@@ -30,15 +27,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         newPassword: _newPasswordController.text,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Password changed successfully", style: TextStyle(color: Colors.white)), backgroundColor: Colors.green),
-      );
+      showGlassToast(context, "Password changed successfully", isError: false);
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
-      );
+      showGlassToast(context, e.toString().replaceAll('Exception: ', ''));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -47,50 +40,61 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "Change Password",
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CustomTextField(
-              label: "Current Password",
-              hint: "Enter current password",
-              controller: _currentPasswordController,
-              isPassword: true,
+      body: AnimatedBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: GlassCard(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GlassTextField(
+                      label: "Current Password",
+                      hint: "Enter current password",
+                      controller: _currentPasswordController,
+                      isPassword: true,
+                      icon: Icons.lock_outline,
+                    ),
+                    const SizedBox(height: 24),
+                    GlassTextField(
+                      label: "New Password",
+                      hint: "Enter new password",
+                      controller: _newPasswordController,
+                      isPassword: true,
+                      icon: Icons.lock_reset,
+                    ),
+                    const SizedBox(height: 48),
+                    _isSubmitting
+                        ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                        : GlassButton(
+                            text: "CHANGE PASSWORD",
+                            onPressed: _submit,
+                          ),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 24),
-            CustomTextField(
-              label: "New Password",
-              hint: "Enter new password",
-              controller: _newPasswordController,
-              isPassword: true,
-            ),
-            const SizedBox(height: 48),
-            _isSubmitting
-                ? const Center(child: CircularProgressIndicator(color: kPrimaryPurple))
-                : PrimaryButton(
-                    text: "CHANGE PASSWORD",
-                    onPressed: _submit,
-                  ),
-          ],
+          ),
         ),
       ),
     );

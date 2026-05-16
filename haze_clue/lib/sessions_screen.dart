@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'main.dart'; // For colors
 import 'api_service.dart';
 import 'device_data_service.dart';
 import 'signalr_service.dart';
 import 'my_devices_screen.dart';
+import 'glass_widgets.dart';
+import 'utils/transitions.dart';
 
 class SessionsScreen extends StatefulWidget {
   const SessionsScreen({super.key});
@@ -34,6 +35,8 @@ class _SessionsScreenState extends State<SessionsScreen> {
   int _concentrationDataPoints = 0;
   StreamSubscription<int>? _streamSubscription;
 
+  bool _isCheckingDevice = false;
+
   @override
   void initState() {
     super.initState();
@@ -48,8 +51,6 @@ class _SessionsScreenState extends State<SessionsScreen> {
     _signalRService.disconnect();
     super.dispose();
   }
-
-  bool _isCheckingDevice = false;
 
   Future<void> _startSession() async {
     if (_isSessionActive || _isCheckingDevice) return;
@@ -72,7 +73,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
       setState(() {
         _isCheckingDevice = false;
       });
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to check devices')));
+      if (mounted) showGlassToast(context, 'Failed to check devices');
       return;
     }
 
@@ -93,7 +94,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
     } catch (e) {
       debugPrint('Failed to start session: $e');
       setState(() => _isSessionActive = false);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to start session')));
+      if (mounted) showGlassToast(context, 'Failed to start session');
     }
   }
 
@@ -166,7 +167,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
         _showCompletionDialog(averageConcentration, elapsedSeconds);
       } catch (e) {
         debugPrint('Failed to complete session: $e');
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to save session')));
+        if (mounted) showGlassToast(context, 'Failed to save session');
       }
     }
   }
@@ -177,14 +178,20 @@ class _SessionsScreenState extends State<SessionsScreen> {
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        title: const Text("Session Complete!"),
-        content: Text("You completed $timeString of focus.\n\nAverage Concentration: $avgConcentration%"),
+        backgroundColor: const Color(0xFF1E1E2A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: Colors.white.withOpacity(0.1)),
+        ),
+        title: const Text("Session Complete!", style: TextStyle(color: Colors.white)),
+        content: Text(
+          "You completed $timeString of focus.\n\nAverage Concentration: $avgConcentration%",
+          style: TextStyle(color: Colors.white.withOpacity(0.8)),
+        ),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Close dialog
-            },
-            child: const Text("Done", style: TextStyle(color: kPrimaryPurple)),
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Done", style: TextStyle(color: Color(0xFF8B5CF6), fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -195,23 +202,30 @@ class _SessionsScreenState extends State<SessionsScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Device Required"),
-        content: const Text("You need to connect an EEG headset or smartwatch to start a focus session. Do you want to connect a device now?"),
+        backgroundColor: const Color(0xFF1E1E2A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: Colors.white.withOpacity(0.1)),
+        ),
+        title: const Text("Device Required", style: TextStyle(color: Colors.white)),
+        content: Text(
+          "You need to connect an EEG headset or smartwatch to start a focus session. Do you want to connect a device now?",
+          style: TextStyle(color: Colors.white.withOpacity(0.8)),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+            child: Text("Cancel", style: TextStyle(color: Colors.white.withOpacity(0.5))),
           ),
-          ElevatedButton(
+          TextButton(
             onPressed: () {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const MyDevicesScreen()),
+                GlassPageRoute(page: const MyDevicesScreen()),
               );
             },
-            style: ElevatedButton.styleFrom(backgroundColor: kPrimaryPurple),
-            child: const Text("Connect Device", style: TextStyle(color: Colors.white)),
+            child: const Text("Connect Device", style: TextStyle(color: Color(0xFF8B5CF6), fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -227,19 +241,15 @@ class _SessionsScreenState extends State<SessionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF8F9FA),
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: const Text(
           "Concentration level",
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
@@ -254,242 +264,264 @@ class _SessionsScreenState extends State<SessionsScreen> {
               _isSessionActive 
                   ? (_isPaused ? "The session is paused." : "The session is ongoing.") 
                   : "Ready to focus?",
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 15,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(height: 24),
 
             // --- Ongoing Timer Card ---
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Text(
-                      _isSessionActive ? _formatTime(_secondsRemaining) : _formatTime(_selectedDuration * 60),
-                      style: const TextStyle(
-                        fontSize: 48, // Made larger
-                        fontWeight: FontWeight.bold,
-                        color: kTextDark,
+            GlassCard(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+                child: Column(
+                  children: [
+                    Center(
+                      child: Text(
+                        _isSessionActive ? _formatTime(_secondsRemaining) : _formatTime(_selectedDuration * 60),
+                        style: const TextStyle(
+                          fontSize: 56,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 2,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    "From $_selectedDuration minutes",
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
+                    const SizedBox(height: 16),
+                    Text(
+                      "From $_selectedDuration minutes",
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.6),
+                        fontSize: 15,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  // Custom Linear Progress Bar for Time
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: LinearProgressIndicator(
-                      value: _isSessionActive 
-                          ? 1.0 - (_secondsRemaining / (_selectedDuration * 60)) 
-                          : 0.0,
-                      minHeight: 12,
-                      backgroundColor: Colors.grey.shade200,
-                      valueColor: const AlwaysStoppedAnimation<Color>(kPrimaryPurple),
+                    const SizedBox(height: 24),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: _isSessionActive 
+                            ? 1.0 - (_secondsRemaining / (_selectedDuration * 60)) 
+                            : 0.0,
+                        minHeight: 8,
+                        backgroundColor: Colors.white.withOpacity(0.1),
+                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
             // --- Session Configuration Card ---
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Session Configuration",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: kTextDark,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      const Icon(Icons.access_time, size: 20, color: Colors.black87),
-                      const SizedBox(width: 8),
-                      const Text(
-                        "Duration(min)",
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
+            GlassCard(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Session Configuration",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  // Duration Bubbles
-                  IgnorePointer(
-                    ignoring: _isSessionActive,
-                    child: Opacity(
-                      opacity: _isSessionActive ? 0.5 : 1.0,
-                      child: Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: _durations.map((duration) {
-                          bool isSelected = duration == _selectedDuration;
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _selectedDuration = duration;
-                                _secondsRemaining = duration * 60;
-                              });
-                            },
-                            child: Container(
-                              width: 48,
-                              height: 48,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: isSelected ? kPrimaryPurple : Colors.grey.shade100,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Text(
-                                "$duration",
-                                style: TextStyle(
-                                  color: isSelected ? Colors.white : kTextDark,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Icon(Icons.access_time, size: 20, color: Colors.white.withOpacity(0.8)),
+                        const SizedBox(width: 8),
+                        Text(
+                          "Duration (min)",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Duration Bubbles
+                    IgnorePointer(
+                      ignoring: _isSessionActive,
+                      child: Opacity(
+                        opacity: _isSessionActive ? 0.5 : 1.0,
+                        child: Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: _durations.map((duration) {
+                            bool isSelected = duration == _selectedDuration;
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _selectedDuration = duration;
+                                  _secondsRemaining = duration * 60;
+                                });
+                              },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                width: 48,
+                                height: 48,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: isSelected ? const Color(0xFF8B5CF6) : Colors.white.withOpacity(0.05),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: isSelected ? const Color(0xFF8B5CF6) : Colors.white.withOpacity(0.2),
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: isSelected ? [
+                                    BoxShadow(
+                                      color: const Color(0xFF8B5CF6).withOpacity(0.4),
+                                      blurRadius: 10,
+                                      spreadRadius: 2,
+                                    )
+                                  ] : null,
+                                ),
+                                child: Text(
+                                  "$duration",
+                                  style: TextStyle(
+                                    color: isSelected ? Colors.white : Colors.white.withOpacity(0.8),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  
-                  // Live Concentration Rate Section
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Live Concentration Rate",
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                            );
+                          }).toList(),
                         ),
                       ),
-                      Text(
-                        _isSessionActive ? "$_currentConcentration%" : "--%",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: kPrimaryPurple,
+                    ),
+                    const SizedBox(height: 40),
+                    
+                    // Live Concentration Rate Section
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Live Concentration Rate",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          _isSessionActive ? "$_currentConcentration%" : "--%",
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF8B5CF6),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 500),
+                        child: LinearProgressIndicator(
+                          value: _isSessionActive ? _currentConcentration / 100 : 0.0,
+                          minHeight: 8,
+                          backgroundColor: Colors.white.withOpacity(0.1),
+                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 500),
-                      child: LinearProgressIndicator(
-                        value: _isSessionActive ? _currentConcentration / 100 : 0.0,
-                        minHeight: 12,
-                        backgroundColor: Colors.grey.shade200,
-                        valueColor: const AlwaysStoppedAnimation<Color>(kPrimaryPurple),
-                      ),
                     ),
-                  ),
-                  const SizedBox(height: 32),
+                    const SizedBox(height: 40),
 
-                  // Action Buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: (_isSessionActive || _isCheckingDevice) ? _endSession : _startSession,
-                          icon: _isCheckingDevice
-                              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                              : Icon(
-                                  _isSessionActive ? Icons.stop : Icons.play_arrow,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
-                          label: Text(
-                            _isCheckingDevice 
-                                ? "Checking Device..." 
-                                : (_isSessionActive ? "End Session" : "Start Session"),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _isSessionActive ? const Color(0xFFE53935) : kPrimaryPurple,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            elevation: 0,
-                          ),
-                        ),
-                      ),
-                      if (_isSessionActive) const SizedBox(width: 16),
-                      if (_isSessionActive)
+                    // Action Buttons
+                    Row(
+                      children: [
                         Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _pauseOrResumeSession,
-                            icon: Icon(
-                              _isPaused ? Icons.play_arrow : Icons.pause,
-                              color: kTextDark,
-                              size: 18,
-                            ),
-                            label: Text(
-                              _isPaused ? "Resume" : "Pause",
-                              style: const TextStyle(
-                                color: kTextDark,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                          child: GestureDetector(
+                            onTap: (_isSessionActive || _isCheckingDevice) ? _endSession : _startSession,
+                            child: Container(
+                              height: 56,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                gradient: LinearGradient(
+                                  colors: _isSessionActive 
+                                      ? [Colors.redAccent.shade400, Colors.redAccent.shade700]
+                                      : const [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                                ),
                               ),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              side: BorderSide(color: Colors.grey.shade300),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (_isCheckingDevice)
+                                    const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                  else
+                                    Icon(
+                                      _isSessionActive ? Icons.stop : Icons.play_arrow,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _isCheckingDevice 
+                                        ? "Checking..." 
+                                        : (_isSessionActive ? "End Session" : "Start Session"),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
                         ),
-                    ],
-                  ),
-                ],
+                        if (_isSessionActive) const SizedBox(width: 12),
+                        if (_isSessionActive)
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: _pauseOrResumeSession,
+                              child: Container(
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
+                                  color: Colors.white.withOpacity(0.05),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      _isPaused ? Icons.play_arrow : Icons.pause,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      _isPaused ? "Resume" : "Pause",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
+            const SizedBox(height: 100), // padding for bottom nav
           ],
         ),
       ),
