@@ -153,6 +153,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 hint: "Gender",
                                 controller: _genderController,
                                 icon: Icons.wc,
+                                readOnly: true,
                               ),
                             ),
                           ],
