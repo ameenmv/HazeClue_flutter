@@ -54,6 +54,10 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
     try {
       await ApiService.addDevice(name, mac);
       _loadDevices();
+      setState(() {
+         // remove it from scanned list if we wanted to be super realistic
+         _scannedDevices.removeWhere((d) => d['mac'] == mac);
+      });
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -163,7 +167,7 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
-                  return Center(child: Text("Error loading devices"));
+                  return const Center(child: Text("Error loading devices"));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Text("No devices connected.");
                 }
@@ -217,7 +221,7 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade300, style: BorderStyle.dash),
+                  border: Border.all(color: Colors.grey.shade300),
                 ),
                 child: const Column(
                   children: [
@@ -359,40 +363,25 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
                   fontSize: 15,
                 ),
               ),
-                  const SizedBox(width: 12),
-                  Icon(Icons.signal_cellular_alt, size: 14, color: signalColor),
-                  const SizedBox(width: 4),
-                  Text(
-                    signal,
-                    style: TextStyle(color: signalColor, fontSize: 12),
-                  ),
-                ],
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: kPrimaryPurple.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
               ),
-            ],
-          ),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            // Generating a random MAC address for demo purposes
-            _connectDevice(name, "00:1B:44:11:3A:B${DateTime.now().millisecond % 10}");
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: kPrimaryPurple,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              child: const Text(
+                "Connect",
+                style: TextStyle(
+                  color: kPrimaryPurple,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
             ),
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          ),
-          child: const Text(
-            "Connect",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
