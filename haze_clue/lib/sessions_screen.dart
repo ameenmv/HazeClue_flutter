@@ -4,6 +4,7 @@ import 'main.dart'; // For colors
 import 'api_service.dart';
 import 'device_data_service.dart';
 import 'signalr_service.dart';
+import 'my_devices_screen.dart';
 
 class SessionsScreen extends StatefulWidget {
   const SessionsScreen({super.key});
@@ -48,10 +49,35 @@ class _SessionsScreenState extends State<SessionsScreen> {
     super.dispose();
   }
 
+  bool _isCheckingDevice = false;
+
   Future<void> _startSession() async {
-    if (_isSessionActive) return;
+    if (_isSessionActive || _isCheckingDevice) return;
 
     setState(() {
+      _isCheckingDevice = true;
+    });
+
+    try {
+      final devices = await ApiService.getDevices();
+      if (devices.isEmpty) {
+        setState(() {
+          _isCheckingDevice = false;
+        });
+        _showDeviceRequiredDialog();
+        return;
+      }
+    } catch (e) {
+      debugPrint('Error checking devices: $e');
+      setState(() {
+        _isCheckingDevice = false;
+      });
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to check devices')));
+      return;
+    }
+
+    setState(() {
+      _isCheckingDevice = false;
       _isSessionActive = true;
       _secondsRemaining = _selectedDuration * 60;
       _totalConcentrationSum = 0;
@@ -159,6 +185,33 @@ class _SessionsScreenState extends State<SessionsScreen> {
               Navigator.pop(context); // Close dialog
             },
             child: const Text("Done", style: TextStyle(color: kPrimaryPurple)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeviceRequiredDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Device Required"),
+        content: const Text("You need to connect an EEG headset or smartwatch to start a focus session. Do you want to connect a device now?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const MyDevicesScreen()),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: kPrimaryPurple),
+            child: const Text("Connect Device", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -377,14 +430,18 @@ class _SessionsScreenState extends State<SessionsScreen> {
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: _isSessionActive ? _endSession : _startSession,
-                          icon: Icon(
-                            _isSessionActive ? Icons.stop : Icons.play_arrow,
-                            color: Colors.white,
-                            size: 18,
-                          ),
+                          onPressed: (_isSessionActive || _isCheckingDevice) ? _endSession : _startSession,
+                          icon: _isCheckingDevice
+                              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                              : Icon(
+                                  _isSessionActive ? Icons.stop : Icons.play_arrow,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
                           label: Text(
-                            _isSessionActive ? "End Session" : "Start Session",
+                            _isCheckingDevice 
+                                ? "Checking Device..." 
+                                : (_isSessionActive ? "End Session" : "Start Session"),
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
