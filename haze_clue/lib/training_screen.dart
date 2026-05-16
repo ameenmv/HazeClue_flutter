@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'api_service.dart';
 import 'concentration_puzzle_screen.dart';
+import 'memory_training_screen.dart';
 import 'main.dart';
 
 class TrainingScreen extends StatefulWidget {
@@ -115,8 +116,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
             "Improve recall and retention",
             Icons.extension,
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Memory Training coming soon!")),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MemoryTrainingScreen()),
               );
             },
           ),
