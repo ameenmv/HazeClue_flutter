@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'splash_screen.dart';
+import 'screens/splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const Color kPrimaryPurple = Color.fromARGB(255, 101, 67, 194);
