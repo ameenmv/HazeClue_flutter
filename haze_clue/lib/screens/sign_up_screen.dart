@@ -50,6 +50,12 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
       return;
     }
 
+    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+    if (!emailRegex.hasMatch(_emailController.text.trim())) {
+      showGlassToast(context, 'Please enter a valid email address');
+      return;
+    }
+
     if (_passwordController.text != _confirmPasswordController.text) {
       showGlassToast(context, 'Passwords do not match');
       return;
