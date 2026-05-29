@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../services/api_service.dart';
+import '../models/insight_model.dart';
 import '../widgets/glass_widgets.dart';
 
 class InsightsScreen extends StatefulWidget {
@@ -21,6 +22,10 @@ class _InsightsScreenState extends State<InsightsScreen> {
   int _improvementPercentage = 0;
   List<int> _weeklyData = [];
   List<int> _monthlyData = [];
+  
+  // Health Insights
+  List<UserInsight> _healthInsights = [];
+  bool _isLoadingHealthInsights = true;
 
   @override
   void initState() {
@@ -42,11 +47,28 @@ class _InsightsScreenState extends State<InsightsScreen> {
         _monthlyData = List<int>.from(data['monthlyData'] ?? []);
         _isLoading = false;
       });
+      _loadHealthInsights();
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _errorMessage = e.toString().replaceAll('Exception: ', '');
         _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadHealthInsights() async {
+    try {
+      final insightsJson = await ApiService.getUserInsights();
+      if (!mounted) return;
+      setState(() {
+        _healthInsights = insightsJson.map((json) => UserInsight.fromJson(json)).toList();
+        _isLoadingHealthInsights = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoadingHealthInsights = false;
       });
     }
   }
@@ -108,6 +130,18 @@ class _InsightsScreenState extends State<InsightsScreen> {
         children: [
           _buildHeroStats(textColor),
           const SizedBox(height: 32),
+          
+          Text(
+            "Daily Health Tips & Alerts",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildHealthInsights(textColor),
+          const SizedBox(height: 32),
           Text(
             "Weekly Focus Details",
             style: TextStyle(
@@ -132,6 +166,104 @@ class _InsightsScreenState extends State<InsightsScreen> {
           const SizedBox(height: 100), // padding for bottom nav
         ],
       ),
+    );
+  }
+
+  Widget _buildHealthInsights(Color textColor) {
+    if (_isLoadingHealthInsights) {
+      return Center(child: CircularProgressIndicator(color: const Color(0xFF8B5CF6)));
+    }
+
+    if (_healthInsights.isEmpty) {
+      return GlassCard(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Row(
+            children: [
+              Icon(Icons.watch, color: textColor.withOpacity(0.5), size: 32),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  "Sync your smartwatch to generate personalized health insights and tips.",
+                  style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 14),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: _healthInsights.map((insight) {
+        IconData icon;
+        Color iconColor;
+
+        switch (insight.type) {
+          case 0: // DailyTip
+            icon = Icons.lightbulb_outline;
+            iconColor = Colors.yellowAccent;
+            break;
+          case 1: // WeeklySummary
+            icon = Icons.insights;
+            iconColor = const Color(0xFF8B5CF6);
+            break;
+          case 2: // Alert
+            icon = Icons.warning_amber_rounded;
+            iconColor = Colors.redAccent;
+            break;
+          default:
+            icon = Icons.info_outline;
+            iconColor = Colors.blueAccent;
+        }
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16.0),
+          child: GlassCard(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: iconColor.withOpacity(0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, color: iconColor, size: 28),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          insight.title,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          insight.message,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: textColor.withOpacity(0.8),
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 
