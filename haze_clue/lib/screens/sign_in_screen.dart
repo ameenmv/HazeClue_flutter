@@ -48,6 +48,12 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
       return;
     }
 
+    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+    if (!emailRegex.hasMatch(_emailController.text.trim())) {
+      showGlassToast(context, 'Please enter a valid email address');
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
       await ApiService.login(
