@@ -34,10 +34,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       child: Scaffold(
         backgroundColor: Colors.transparent, // Very important for the background to show through!
         extendBody: true, // This allows the body to extend behind the bottom nav bar
-        body: IndexedStack(
-          index: _selectedIndex,
-          children: _pages,
-        ),
+        body: _pages[_selectedIndex],
         bottomNavigationBar: ClipRRect(
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(30),
