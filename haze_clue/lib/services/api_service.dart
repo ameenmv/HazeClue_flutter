@@ -34,6 +34,22 @@ class ApiService {
     };
   }
 
+  static String _extractErrorMessage(Map<String, dynamic> data) {
+    if (data['errors'] != null && data['errors'] is Map) {
+      final errors = data['errors'] as Map<String, dynamic>;
+      final messages = <String>[];
+      for (final val in errors.values) {
+        if (val is List) {
+          messages.add(val.join('\n'));
+        } else {
+          messages.add(val.toString());
+        }
+      }
+      return messages.join('\n');
+    }
+    return data['message'] ?? data['title'] ?? 'Request failed';
+  }
+
   // ─── AUTH ────────────────────────────────────────────────────
 
   static Future<Map<String, dynamic>> register({
@@ -55,7 +71,7 @@ class ApiService {
       if (data['access_token'] != null) await saveToken(data['access_token']);
       return data;
     }
-    throw Exception(data['message'] ?? 'Registration failed');
+    throw Exception(_extractErrorMessage(data));
   }
 
   static Future<Map<String, dynamic>> login({
@@ -72,7 +88,7 @@ class ApiService {
       if (data['access_token'] != null) await saveToken(data['access_token']);
       return data;
     }
-    throw Exception(data['message'] ?? 'Login failed');
+    throw Exception(_extractErrorMessage(data));
   }
 
   static Future<void> logout() async {
