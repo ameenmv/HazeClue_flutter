@@ -3,12 +3,18 @@ import 'package:health/health.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class SmartwatchService {
   final Health health = Health();
   final String backendUrl = 'http://localhost:5000/api/v1/smartwatch/sync';
 
   Future<bool> requestPermissions() async {
+    if (kIsWeb) {
+      print("Running on Web: Simulating health permissions.");
+      return true;
+    }
+
     final types = [
       HealthDataType.STEPS,
       HealthDataType.HEART_RATE,
@@ -35,6 +41,13 @@ class SmartwatchService {
     bool hasPermissions = await requestPermissions();
     if (!hasPermissions) {
       print("No permissions to fetch health data.");
+      return;
+    }
+
+    if (kIsWeb) {
+      print("Running on Web: Simulating smartwatch data fetch...");
+      await Future.delayed(const Duration(seconds: 2)); // Simulate delay
+      await _syncToBackend(7500, 75.0, 60.5, 7.2);
       return;
     }
 
