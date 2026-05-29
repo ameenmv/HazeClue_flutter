@@ -45,6 +45,7 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
           _scannedDevices = [
             {"name": "Muse S (Gen 2)", "mac": "00:11:22:33:44:55"},
             {"name": "NeuroSky MindWave", "mac": "AA:BB:CC:DD:EE:FF"},
+            {"name": "Halo Sport (tDCS)", "mac": "11:22:33:44:55:66"},
           ];
         });
       }
