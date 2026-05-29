@@ -264,6 +264,16 @@ class ApiService {
     throw Exception('Failed to get insights');
   }
 
+  static Future<List<dynamic>> getUserInsights() async {
+    final headers = await _authHeaders();
+    final res = await http.get(
+      Uri.parse('$baseUrl/insights'),
+      headers: headers,
+    );
+    if (res.statusCode == 200) return jsonDecode(res.body);
+    throw Exception('Failed to get user insights');
+  }
+
   static Future<List<dynamic>> getNotifications() async {
     final headers = await _authHeaders();
     final res = await http.get(
