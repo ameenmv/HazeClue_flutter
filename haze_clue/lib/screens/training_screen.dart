@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'concentration_puzzle_screen.dart';
 import 'memory_training_screen.dart';
+import 'my_devices_screen.dart';
 import '../widgets/glass_widgets.dart';
 import '../utils/transitions.dart';
 import 'tdcs_session_screen.dart';
