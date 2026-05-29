@@ -83,7 +83,11 @@ class _TrainingScreenState extends State<TrainingScreen> {
     if (!mounted) return;
 
     if (!hasTdcs) {
-      showGlassToast(context, "Please connect a tDCS device in My Devices first.");
+      showGlassToast(context, "Please connect a tDCS device first.");
+      Navigator.push(
+        context,
+        GlassPageRoute(page: const MyDevicesScreen()),
+      );
       return;
     }
 
