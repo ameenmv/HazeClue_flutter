@@ -49,7 +49,7 @@ class SmartwatchService {
     ];
 
     try {
-      List<HealthDataPoint> healthData = await health.getHealthDataFromTypes(yesterday, now, types);
+      List<HealthDataPoint> healthData = await health.getHealthDataFromTypes(startTime: yesterday, endTime: now, types: types);
       
       int steps = 0;
       double heartRate = 0;
