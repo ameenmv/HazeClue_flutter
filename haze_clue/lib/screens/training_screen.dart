@@ -4,6 +4,7 @@ import 'concentration_puzzle_screen.dart';
 import 'memory_training_screen.dart';
 import '../widgets/glass_widgets.dart';
 import '../utils/transitions.dart';
+import 'tdcs_session_screen.dart';
 
 class TrainingScreen extends StatefulWidget {
   const TrainingScreen({super.key});
@@ -62,6 +63,104 @@ class _TrainingScreenState extends State<TrainingScreen> {
         showGlassToast(context, "Now playing: $title...", isError: false);
       }
     });
+  }
+
+  Future<void> _startTdcsSession() async {
+    setState(() => _isLoading = true);
+    bool hasTdcs = false;
+    try {
+      final devices = await ApiService.getDevices();
+      hasTdcs = devices.any((d) => 
+        d['name'].toString().toLowerCase().contains('tdcs') || 
+        d['name'].toString().toLowerCase().contains('halo')
+      );
+    } catch (e) {
+      debugPrint("Failed to check devices: $e");
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+
+    if (!mounted) return;
+
+    if (!hasTdcs) {
+      showGlassToast(context, "Please connect a tDCS device in My Devices first.");
+      return;
+    }
+
+    // Show duration picker
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        int selectedDuration = 15;
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF1E1E2A),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              title: const Text("Session Duration", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "Choose the duration for your tDCS stimulation session:",
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [10, 15, 20].map((duration) {
+                      final isSelected = selectedDuration == duration;
+                      return GestureDetector(
+                        onTap: () {
+                          setDialogState(() => selectedDuration = duration);
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: isSelected ? const Color(0xFF8B5CF6) : Colors.transparent,
+                            border: Border.all(color: const Color(0xFF8B5CF6)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            "$duration min",
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : const Color(0xFF8B5CF6),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text("Cancel", style: TextStyle(color: Colors.white54)),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    Navigator.push(
+                      this.context,
+                      GlassPageRoute(
+                        page: TdcsSessionScreen(
+                          initialIntensity: _intensityLevel,
+                          durationMinutes: selectedDuration,
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text("Start Session", style: TextStyle(color: Color(0xFF8B5CF6), fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          }
+        );
+      },
+    );
   }
 
   @override
@@ -303,6 +402,15 @@ class _TrainingScreenState extends State<TrainingScreen> {
                 value: _intensityLevel,
                 onChanged: _updateIntensity,
                 onChangeEnd: _saveIntensity,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: GlassButton(
+                text: "Start tDCS Session",
+                onPressed: _startTdcsSession,
+                icon: Icons.bolt,
               ),
             ),
           ],
