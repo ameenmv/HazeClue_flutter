@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/smartwatch_service.dart';
 import '../widgets/glass_widgets.dart';
 
 class MyDevicesScreen extends StatefulWidget {
@@ -16,6 +17,8 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
   
   bool _isScanning = false;
   List<Map<String, String>> _scannedDevices = [];
+  bool _isSyncing = false;
+  final SmartwatchService _smartwatchService = SmartwatchService();
 
   @override
   void initState() {
@@ -70,6 +73,25 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
     } catch (e) {
       if (!mounted) return;
       showGlassToast(context, e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
+  Future<void> _syncSmartwatchData() async {
+    setState(() {
+      _isSyncing = true;
+    });
+
+    try {
+      await _smartwatchService.fetchAndSyncData();
+      if (mounted) showGlassToast(context, "Smartwatch data synced successfully!", isError: false);
+    } catch (e) {
+      if (mounted) showGlassToast(context, "Error syncing data", isError: true);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSyncing = false;
+        });
+      }
     }
   }
 
@@ -252,6 +274,67 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
                     onTap: () => _connectDevice(device['name']!, device['mac']!),
                   ),
                 )),
+                if (_selectedCategory == 2 || _selectedCategory == 0) ...[
+                  const SizedBox(height: 32),
+                  Text(
+                    "Smartwatch Actions",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: _isSyncing ? null : _syncSmartwatchData,
+                    child: GlassCard(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF8B5CF6).withOpacity(0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: _isSyncing
+                                  ? const SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF8B5CF6)),
+                                    )
+                                  : const Icon(Icons.sync, size: 28, color: Color(0xFF8B5CF6)),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Sync Apple Health / Google Fit",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: textColor,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Pull latest sleep, HRV, and activity data",
+                                    style: TextStyle(
+                                      color: textColor.withOpacity(0.6),
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
