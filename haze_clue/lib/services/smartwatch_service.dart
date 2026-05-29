@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SmartwatchService {
-  final HealthFactory health = HealthFactory();
+  final Health health = Health();
   final String backendUrl = 'http://localhost:5000/api/v1/smartwatch/sync';
 
   Future<bool> requestPermissions() async {
