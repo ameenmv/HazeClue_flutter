@@ -106,7 +106,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
   }
 
   Widget _buildBody(BuildContext context, Color textColor) {
-    if (_isLoading) {
+    if (_isLoading && _totalFocusSeconds == 0) {
       return Center(child: CircularProgressIndicator(color: textColor));
     }
 
@@ -119,52 +119,59 @@ class _InsightsScreenState extends State<InsightsScreen> {
       );
     }
 
-    if (_totalFocusSeconds == 0) {
-      return _buildEmptyState(textColor);
-    }
+    return RefreshIndicator(
+      onRefresh: () async {
+        await _loadInsights();
+      },
+      color: const Color(0xFF8B5CF6),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Daily Health Tips & Alerts",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildHealthInsights(textColor),
+            const SizedBox(height: 32),
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeroStats(textColor),
-          const SizedBox(height: 32),
-          
-          Text(
-            "Daily Health Tips & Alerts",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: textColor,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildHealthInsights(textColor),
-          const SizedBox(height: 32),
-          Text(
-            "Weekly Focus Details",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: textColor,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildWeeklyStatsCard(context, textColor),
-          const SizedBox(height: 32),
-          Text(
-            "Months Focus Details",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: textColor,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildMonthlyGraph(context, textColor),
-          const SizedBox(height: 100), // padding for bottom nav
-        ],
+            if (_totalFocusSeconds == 0)
+              _buildEmptyState(textColor)
+            else ...[
+              _buildHeroStats(textColor),
+              const SizedBox(height: 32),
+              Text(
+                "Weekly Focus Details",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildWeeklyStatsCard(context, textColor),
+              const SizedBox(height: 32),
+              Text(
+                "Months Focus Details",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildMonthlyGraph(context, textColor),
+            ],
+            const SizedBox(height: 100), // padding for bottom nav
+          ],
+        ),
       ),
     );
   }
