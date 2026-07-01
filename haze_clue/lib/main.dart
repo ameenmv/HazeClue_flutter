@@ -9,20 +9,35 @@ const Color kTextLightGrey = Color(0xFF7A7A8C);
 const Color kInputBg = Color(0xFFF5F5F7);
 const Color kSuccessGreen = Color(0xFF00A86B);
 
+// Shared Preferences Provider
+final sharedPrefsProvider = Provider<SharedPreferences>((ref) => throw UnimplementedError());
+
 // Global Theme Provider
-final themeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.dark);
+final themeProvider = NotifierProvider<ThemeNotifier, ThemeMode>(ThemeNotifier.new);
+
+class ThemeNotifier extends Notifier<ThemeMode> {
+  @override
+  ThemeMode build() {
+    final prefs = ref.watch(sharedPrefsProvider);
+    final isLight = prefs.getBool('isLightMode') ?? false;
+    return isLight ? ThemeMode.light : ThemeMode.dark;
+  }
+
+  void setMode(ThemeMode mode) {
+    state = mode;
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Load saved theme preference
   final prefs = await SharedPreferences.getInstance();
-  final isLight = prefs.getBool('isLightMode') ?? false;
 
   runApp(
     ProviderScope(
       overrides: [
-        themeProvider.overrideWith((ref) => isLight ? ThemeMode.light : ThemeMode.dark),
+        sharedPrefsProvider.overrideWithValue(prefs),
       ],
       child: const MyApp(),
     ),

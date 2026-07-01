@@ -14,15 +14,16 @@ import '../utils/transitions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import '../main.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Map<String, dynamic>? _profile;
 
   @override
@@ -240,7 +241,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             onChanged: (val) async {
                               final prefs = await SharedPreferences.getInstance();
                               await prefs.setBool('isLightMode', !val);
-                              themeNotifier.value = !val ? ThemeMode.light : ThemeMode.dark;
+                              ref.read(themeProvider.notifier).setMode(!val ? ThemeMode.light : ThemeMode.dark);
                             },
                           ),
                           textColor: textColor,
