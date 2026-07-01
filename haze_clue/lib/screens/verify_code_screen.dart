@@ -3,6 +3,7 @@ import '../widgets/glass_widgets.dart';
 import 'new_password_screen.dart';
 import '../services/api_service.dart';
 import '../utils/transitions.dart';
+import 'package:pinput/pinput.dart';
 
 class VerifyCodeScreen extends StatefulWidget {
   final String email;
@@ -62,6 +63,17 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> with SingleTickerPr
     final textColor = Theme.of(context).colorScheme.onSurface;
     final isLight = Theme.of(context).brightness == Brightness.light;
 
+    final defaultPinTheme = PinTheme(
+      width: 50,
+      height: 56,
+      textStyle: TextStyle(fontSize: 20, color: textColor, fontWeight: FontWeight.w600),
+      decoration: BoxDecoration(
+        border: Border.all(color: textColor.withOpacity(0.2)),
+        borderRadius: BorderRadius.circular(15),
+        color: textColor.withOpacity(0.05),
+      ),
+    );
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -120,13 +132,14 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> with SingleTickerPr
                           ),
                           const SizedBox(height: 40),
                           
-                          GlassTextField(
+                          Pinput(
+                            length: 6,
                             controller: _otpController,
-                            label: "OTP Code",
-                            hint: "123456",
-                            icon: Icons.lock_outline,
-                            isPassword: true,
-                            keyboardType: TextInputType.number,
+                            defaultPinTheme: defaultPinTheme,
+                            focusedPinTheme: defaultPinTheme.copyDecorationWith(
+                              border: Border.all(color: const Color(0xFF8B5CF6)),
+                            ),
+                            onCompleted: (pin) => _handleVerify(),
                           ),
                           
                           const SizedBox(height: 30),

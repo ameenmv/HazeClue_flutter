@@ -23,6 +23,30 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   
+  String? _emailError;
+  String? _passwordError;
+
+  void _validateEmail(String val) {
+    if (val.isEmpty) {
+      setState(() => _emailError = null);
+      return;
+    }
+    final regex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+    if (!regex.hasMatch(val)) {
+      setState(() => _emailError = 'Please enter a valid email address');
+    } else {
+      setState(() => _emailError = null);
+    }
+  }
+
+  void _validatePassword(String val) {
+    if (val.isEmpty) {
+      setState(() => _passwordError = 'Password cannot be empty');
+    } else {
+      setState(() => _passwordError = null);
+    }
+  }
+  
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
@@ -44,13 +68,12 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
 
   Future<void> _handleSignIn() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      showGlassToast(context, 'Please enter your email and password');
+      if (_emailController.text.isEmpty) setState(() => _emailError = 'Email cannot be empty');
+      if (_passwordController.text.isEmpty) setState(() => _passwordError = 'Password cannot be empty');
       return;
     }
 
-    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
-    if (!emailRegex.hasMatch(_emailController.text.trim())) {
-      showGlassToast(context, 'Please enter a valid email address');
+    if (_emailError != null || _passwordError != null) {
       return;
     }
 
@@ -145,6 +168,8 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                             hint: "example@gmail.com",
                             icon: Icons.email_outlined,
                             controller: _emailController,
+                            errorText: _emailError,
+                            onChanged: _validateEmail,
                           ),
                           const SizedBox(height: 20),
                           GlassTextField(
@@ -153,6 +178,8 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                             icon: Icons.lock_outline,
                             isPassword: true,
                             controller: _passwordController,
+                            errorText: _passwordError,
+                            onChanged: _validatePassword,
                           ),
                           const SizedBox(height: 20),
                           

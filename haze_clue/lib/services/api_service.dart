@@ -105,8 +105,33 @@ class ApiService {
       body: jsonEncode({'email': email}),
     );
     if (res.statusCode != 200) {
-      final data = jsonDecode(res.body);
-      throw Exception(data['message'] ?? 'Failed to request reset');
+      _throwBackendError(res.body, 'Failed to request reset');
+    }
+  }
+
+  static void _throwBackendError(String body, String defaultMsg) {
+    try {
+      final data = jsonDecode(body);
+      
+      // Handle FluentValidation RFC 7807 problem details format
+      if (data['errors'] != null && data['errors'] is Map) {
+        final errors = data['errors'] as Map;
+        if (errors.isNotEmpty) {
+          final firstErrorList = errors.values.first;
+          if (firstErrorList is List && firstErrorList.isNotEmpty) {
+            throw Exception(firstErrorList.first.toString());
+          }
+        }
+      }
+      
+      if (data['title'] != null && data['errors'] == null && data['message'] == null) {
+        throw Exception(data['title']);
+      }
+      
+      throw Exception(data['message'] ?? defaultMsg);
+    } catch (e) {
+      if (e.toString().contains('Exception:')) throw e; // rethrow already parsed exception
+      throw Exception(defaultMsg);
     }
   }
 
@@ -119,8 +144,8 @@ class ApiService {
     if (res.statusCode == 200) {
       return jsonDecode(res.body)['resetToken'] ?? '';
     }
-    final data = jsonDecode(res.body);
-    throw Exception(data['message'] ?? 'Failed to verify OTP');
+    _throwBackendError(res.body, 'Failed to verify OTP');
+    return '';
   }
 
   static Future<void> resetPassword({
@@ -156,9 +181,8 @@ class ApiService {
         'newPassword': newPassword,
       }),
     );
-    if (res.statusCode != 200 && res.statusCode != 201) {
-      final data = jsonDecode(res.body);
-      throw Exception(data['message'] ?? 'Failed to change password');
+    if (res.statusCode != 200) {
+      _throwBackendError(res.body, 'Failed to reset password');
     }
   }
 

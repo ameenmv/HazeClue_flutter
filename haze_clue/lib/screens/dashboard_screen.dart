@@ -119,9 +119,10 @@ class DashboardContent extends ConsumerWidget {
               // Stats Card
               statsAsync.when(
                 data: (stats) {
+                  final isDeviceConnected = ref.watch(isDeviceConnectedProvider);
                   final focusPercentage = (stats['avgAttention'] ?? 100) / 100.0;
                   final focusLabel = '${(focusPercentage * 100).toInt()}%';
-                  return _buildFocusCard(focusPercentage, focusLabel, textColor);
+                  return _buildFocusCard(context, focusPercentage, focusLabel, textColor, isDeviceConnected);
                 },
                 loading: () => const ShimmerFocusCard(),
                 error: (error, stack) => _buildErrorCard(
@@ -213,7 +214,7 @@ class DashboardContent extends ConsumerWidget {
     );
   }
 
-  Widget _buildFocusCard(double focusPercentage, String focusLabel, Color textColor) {
+  Widget _buildFocusCard(BuildContext context, double focusPercentage, String focusLabel, Color textColor, bool isConnected) {
     return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -232,51 +233,105 @@ class DashboardContent extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  height: 160,
-                  width: 160,
-                  child: CircularProgressIndicator(
-                    value: focusPercentage, 
-                    strokeWidth: 14,
-                    backgroundColor: Colors.white.withOpacity(0.1),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
-                    strokeCap: StrokeCap.round,
+            if (isConnected) ...[
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    height: 160,
+                    width: 160,
+                    child: CircularProgressIndicator(
+                      value: focusPercentage, 
+                      strokeWidth: 14,
+                      backgroundColor: Colors.white.withOpacity(0.1),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
+                      strokeCap: StrokeCap.round,
+                    ),
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        focusLabel,
+                        style: TextStyle(
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        ),
+                      ),
+                      Text(
+                        "Focused",
+                        style: TextStyle(
+                          color: textColor.withOpacity(0.6),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Text(
+                "Your cognitive state is optimal.\nKeep it up!",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: textColor.withOpacity(0.7),
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+              ),
+            ] else ...[
+              Container(
+                height: 160,
+                width: 160,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: textColor.withOpacity(0.2),
+                    width: 2,
+                    style: BorderStyle.solid,
                   ),
                 ),
-                Column(
-                  children: [
-                    Text(
-                      focusLabel,
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.headset_off_outlined, size: 48, color: textColor.withOpacity(0.4)),
+                      const SizedBox(height: 8),
+                      Text(
+                        "No Device",
+                        style: TextStyle(color: textColor.withOpacity(0.5), fontWeight: FontWeight.w600),
                       ),
-                    ),
-                    Text(
-                      "Focused",
-                      style: TextStyle(
-                        color: textColor.withOpacity(0.6),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Text(
-              "Your cognitive state is optimal.\nKeep it up!",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: textColor.withOpacity(0.7),
-                fontSize: 14,
-                height: 1.5,
               ),
-            ),
+              const SizedBox(height: 24),
+              Text(
+                "Waiting for headband connection.\nPlease wear your device to see live focus.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: textColor.withOpacity(0.7),
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    GlassPageRoute(page: const MyDevicesScreen()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: textColor.withOpacity(0.1),
+                  foregroundColor: textColor,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                ),
+                child: const Text("Connect Device"),
+              ),
+            ],
           ],
         ),
       ),

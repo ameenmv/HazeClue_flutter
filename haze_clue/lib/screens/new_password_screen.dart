@@ -17,6 +17,32 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> with SingleTicker
   final TextEditingController _passController = TextEditingController();
   final TextEditingController _confirmPassController = TextEditingController();
   bool _isLoading = false;
+  
+  String? _passError;
+  String? _confirmPassError;
+
+  void _validatePassword(String val) {
+    if (val.isEmpty) {
+      setState(() => _passError = null);
+    } else if (val.length < 5) {
+      setState(() => _passError = 'Password is too short');
+    } else {
+      setState(() => _passError = null);
+    }
+    if (_confirmPassController.text.isNotEmpty) {
+      _validateConfirmPassword(_confirmPassController.text);
+    }
+  }
+
+  void _validateConfirmPassword(String val) {
+    if (val.isEmpty) {
+      setState(() => _confirmPassError = null);
+    } else if (val != _passController.text) {
+      setState(() => _confirmPassError = 'Passwords do not match');
+    } else {
+      setState(() => _confirmPassError = null);
+    }
+  }
 
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -38,10 +64,12 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> with SingleTicker
   }
 
   Future<void> _handleReset() async {
-    if (_passController.text.isEmpty || _passController.text != _confirmPassController.text) {
-      showGlassToast(context, 'Passwords do not match');
+    if (_passController.text.isEmpty || _confirmPassController.text.isEmpty) {
+      if (_passController.text.isEmpty) setState(() => _passError = 'Password cannot be empty');
+      if (_confirmPassController.text.isEmpty) setState(() => _confirmPassError = 'Please confirm your password');
       return;
     }
+    if (_passError != null || _confirmPassError != null) return;
     setState(() => _isLoading = true);
     try {
       await ApiService.resetPassword(
@@ -122,6 +150,8 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> with SingleTicker
                             hint: "••••••••",
                             icon: Icons.lock_outline,
                             isPassword: true,
+                            errorText: _passError,
+                            onChanged: _validatePassword,
                           ),
                           const SizedBox(height: 20),
                           GlassTextField(
@@ -130,6 +160,8 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> with SingleTicker
                             hint: "••••••••",
                             icon: Icons.lock_outline,
                             isPassword: true,
+                            errorText: _confirmPassError,
+                            onChanged: _validateConfirmPassword,
                           ),
                           const SizedBox(height: 40),
                           

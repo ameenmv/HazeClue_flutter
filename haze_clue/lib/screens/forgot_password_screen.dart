@@ -14,6 +14,20 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   bool _isLoading = false;
+  String? _emailError;
+
+  void _validateEmail(String val) {
+    if (val.isEmpty) {
+      setState(() => _emailError = null);
+      return;
+    }
+    final regex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+    if (!regex.hasMatch(val)) {
+      setState(() => _emailError = 'Please enter a valid email address');
+    } else {
+      setState(() => _emailError = null);
+    }
+  }
 
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -35,9 +49,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Single
 
   Future<void> _handleReset() async {
     if (_emailController.text.isEmpty) {
-      showGlassToast(context, 'Please enter your email');
+      setState(() => _emailError = 'Email cannot be empty');
       return;
     }
+    if (_emailError != null) return;
     
     setState(() => _isLoading = true);
     try {
@@ -114,6 +129,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Single
                             label: "Email",
                             hint: "example@gmail.com",
                             icon: Icons.email_outlined,
+                            errorText: _emailError,
+                            onChanged: _validateEmail,
                           ),
                           const SizedBox(height: 40),
                           

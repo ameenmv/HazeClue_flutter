@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/dashboard_provider.dart';
 import '../services/api_service.dart';
 import '../services/smartwatch_service.dart';
 import '../widgets/glass_widgets.dart';
 
-class MyDevicesScreen extends StatefulWidget {
+class MyDevicesScreen extends ConsumerStatefulWidget {
   const MyDevicesScreen({super.key});
 
   @override
-  State<MyDevicesScreen> createState() => _MyDevicesScreenState();
+  ConsumerState<MyDevicesScreen> createState() => _MyDevicesScreenState();
 }
 
-class _MyDevicesScreenState extends State<MyDevicesScreen> {
+class _MyDevicesScreenState extends ConsumerState<MyDevicesScreen> {
   int _selectedCategory = 0;
   final List<String> _categories = ["All", "EEG", "Smartwatch", "tDCS"];
   late Future<List<dynamic>> _devicesFuture;
@@ -28,7 +30,12 @@ class _MyDevicesScreenState extends State<MyDevicesScreen> {
 
   void _loadDevices() {
     setState(() {
-      _devicesFuture = ApiService.getDevices();
+      _devicesFuture = ApiService.getDevices().then((devices) {
+        if (mounted) {
+          ref.read(isDeviceConnectedProvider.notifier).setConnected(devices.isNotEmpty);
+        }
+        return devices;
+      });
     });
   }
 

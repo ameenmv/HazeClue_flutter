@@ -30,6 +30,40 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
   bool _hasDigit = false;
   bool _hasSpecialChar = false;
 
+  String? _nameError;
+  String? _emailError;
+  String? _passwordError;
+  String? _confirmPasswordError;
+
+  void _validateName(String val) {
+    if (val.isEmpty) setState(() => _nameError = null);
+    else if (val.length < 3) setState(() => _nameError = 'Name must be at least 3 characters');
+    else setState(() => _nameError = null);
+  }
+
+  void _validateEmail(String val) {
+    if (val.isEmpty) {
+      setState(() => _emailError = null);
+      return;
+    }
+    final regex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+    if (!regex.hasMatch(val)) {
+      setState(() => _emailError = 'Please enter a valid email address');
+    } else {
+      setState(() => _emailError = null);
+    }
+  }
+
+  void _validateConfirmPassword(String val) {
+    if (val.isEmpty) {
+      setState(() => _confirmPasswordError = null);
+    } else if (val != _passwordController.text) {
+      setState(() => _confirmPasswordError = 'Passwords do not match');
+    } else {
+      setState(() => _confirmPasswordError = null);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -48,7 +82,18 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
       _hasLowercase = text.contains(RegExp(r'[a-z]'));
       _hasDigit = text.contains(RegExp(r'[0-9]'));
       _hasSpecialChar = text.contains(RegExp(r'[^a-zA-Z0-9]'));
+      
+      if (text.isEmpty) {
+        _passwordError = null;
+      } else if (!_hasMinLength || !_hasUppercase || !_hasLowercase || !_hasDigit || !_hasSpecialChar) {
+        _passwordError = 'Please meet all password requirements';
+      } else {
+        _passwordError = null;
+      }
     });
+    if (_confirmPasswordController.text.isNotEmpty) {
+      _validateConfirmPassword(_confirmPasswordController.text);
+    }
   }
 
   @override
@@ -65,24 +110,16 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
   Future<void> _handleSignUp() async {
     if (_nameController.text.isEmpty ||
         _emailController.text.isEmpty ||
-        _passwordController.text.isEmpty) {
-      showGlassToast(context, 'Please fill in all fields');
+        _passwordController.text.isEmpty || 
+        _confirmPasswordController.text.isEmpty) {
+      if (_nameController.text.isEmpty) setState(() => _nameError = 'Name cannot be empty');
+      if (_emailController.text.isEmpty) setState(() => _emailError = 'Email cannot be empty');
+      if (_passwordController.text.isEmpty) setState(() => _passwordError = 'Password cannot be empty');
+      if (_confirmPasswordController.text.isEmpty) setState(() => _confirmPasswordError = 'Please confirm your password');
       return;
     }
 
-    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
-    if (!emailRegex.hasMatch(_emailController.text.trim())) {
-      showGlassToast(context, 'Please enter a valid email address');
-      return;
-    }
-
-    if (!_hasMinLength || !_hasUppercase || !_hasLowercase || !_hasDigit || !_hasSpecialChar) {
-      showGlassToast(context, 'Please meet all password requirements');
-      return;
-    }
-
-    if (_passwordController.text != _confirmPasswordController.text) {
-      showGlassToast(context, 'Passwords do not match');
+    if (_nameError != null || _emailError != null || _passwordError != null || _confirmPasswordError != null) {
       return;
     }
 
@@ -195,6 +232,8 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                             hint: "John Doe",
                             icon: Icons.person_outline,
                             controller: _nameController,
+                            errorText: _nameError,
+                            onChanged: _validateName,
                           ),
                           const SizedBox(height: 20),
                           GlassTextField(
@@ -202,6 +241,8 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                             hint: "example@gmail.com",
                             icon: Icons.email_outlined,
                             controller: _emailController,
+                            errorText: _emailError,
+                            onChanged: _validateEmail,
                           ),
                           const SizedBox(height: 20),
                           GlassTextField(
@@ -210,6 +251,8 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                             icon: Icons.lock_outline,
                             isPassword: true,
                             controller: _passwordController,
+                            errorText: _passwordError,
+                            // onChanged is handled by listener added in initState
                           ),
                           const SizedBox(height: 8),
                           _buildPasswordCriteria(),
@@ -220,6 +263,8 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                             icon: Icons.lock_outline,
                             isPassword: true,
                             controller: _confirmPasswordController,
+                            errorText: _confirmPasswordError,
+                            onChanged: _validateConfirmPassword,
                           ),
                           const SizedBox(height: 40),
                           

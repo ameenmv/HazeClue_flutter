@@ -1,6 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/api_service.dart';
 
+class DeviceConnectionNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void toggle() {
+    state = !state;
+  }
+  
+  void setConnected(bool value) {
+    state = value;
+  }
+}
+
+// Provide device connection state
+final isDeviceConnectedProvider = NotifierProvider<DeviceConnectionNotifier, bool>(() {
+  return DeviceConnectionNotifier();
+});
+
 // Provide the stats
 final dashboardStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   return await ApiService.getDashboardStats();

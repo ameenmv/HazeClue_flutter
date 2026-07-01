@@ -169,6 +169,8 @@ class GlassTextField extends StatefulWidget {
   final TextInputType keyboardType;
   final TextEditingController controller;
   final bool readOnly;
+  final String? errorText;
+  final ValueChanged<String>? onChanged;
 
   const GlassTextField({
     super.key,
@@ -179,6 +181,8 @@ class GlassTextField extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     required this.controller,
     this.readOnly = false,
+    this.errorText,
+    this.onChanged,
   });
 
   @override
@@ -217,10 +221,12 @@ class _GlassTextFieldState extends State<GlassTextField> {
             readOnly: widget.readOnly,
             obscureText: widget.isPassword ? _obscure : false,
             keyboardType: widget.keyboardType,
+            onChanged: widget.onChanged,
             style: TextStyle(color: textColor),
             decoration: InputDecoration(
               hintText: widget.hint,
               hintStyle: TextStyle(color: hintColor),
+              errorText: widget.errorText,
               prefixIcon: widget.icon != null 
                   ? Icon(widget.icon, color: textColor.withOpacity(0.7))
                   : null,
