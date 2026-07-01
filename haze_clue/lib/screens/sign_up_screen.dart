@@ -24,16 +24,36 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
+  bool _hasMinLength = false;
+  bool _hasUppercase = false;
+  bool _hasLowercase = false;
+  bool _hasDigit = false;
+  bool _hasSpecialChar = false;
+
   @override
   void initState() {
     super.initState();
     _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
     _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOutCubic);
     _fadeController.forward();
+
+    _passwordController.addListener(_validatePassword);
+  }
+
+  void _validatePassword() {
+    final text = _passwordController.text;
+    setState(() {
+      _hasMinLength = text.length >= 5;
+      _hasUppercase = text.contains(RegExp(r'[A-Z]'));
+      _hasLowercase = text.contains(RegExp(r'[a-z]'));
+      _hasDigit = text.contains(RegExp(r'[0-9]'));
+      _hasSpecialChar = text.contains(RegExp(r'[^a-zA-Z0-9]'));
+    });
   }
 
   @override
   void dispose() {
+    _passwordController.removeListener(_validatePassword);
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -53,6 +73,11 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
     final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
     if (!emailRegex.hasMatch(_emailController.text.trim())) {
       showGlassToast(context, 'Please enter a valid email address');
+      return;
+    }
+
+    if (!_hasMinLength || !_hasUppercase || !_hasLowercase || !_hasDigit || !_hasSpecialChar) {
+      showGlassToast(context, 'Please meet all password requirements');
       return;
     }
 
@@ -81,6 +106,44 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
     }
   }
 
+  Widget _buildPasswordCriteriaRow(String text, bool isMet) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4.0),
+      child: Row(
+        children: [
+          Icon(
+            isMet ? Icons.check_circle : Icons.cancel,
+            color: isMet ? Colors.green.shade400 : Colors.red.shade400,
+            size: 16,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: TextStyle(
+              color: isMet ? Colors.green.shade400 : Colors.red.shade400,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPasswordCriteria() {
+    if (_passwordController.text.isEmpty) return const SizedBox.shrink();
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildPasswordCriteriaRow("At least 5 characters", _hasMinLength),
+        _buildPasswordCriteriaRow("At least one uppercase letter", _hasUppercase),
+        _buildPasswordCriteriaRow("At least one lowercase letter", _hasLowercase),
+        _buildPasswordCriteriaRow("At least one number", _hasDigit),
+        _buildPasswordCriteriaRow("At least one special character", _hasSpecialChar),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final textColor = Theme.of(context).colorScheme.onSurface;
@@ -107,10 +170,11 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                       padding: const EdgeInsets.all(32.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Text(
                             "Sign Up",
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
@@ -147,7 +211,9 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                             isPassword: true,
                             controller: _passwordController,
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 8),
+                          _buildPasswordCriteria(),
+                          const SizedBox(height: 12),
                           GlassTextField(
                             label: "Confirm Password",
                             hint: "••••••••",
@@ -158,7 +224,7 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                           const SizedBox(height: 40),
                           
                           _isLoading
-                              ? CircularProgressIndicator(color: textColor)
+                              ? Center(child: CircularProgressIndicator(color: textColor))
                               : GlassButton(text: "Sign Up", onPressed: _handleSignUp),
                           
                           const SizedBox(height: 30),

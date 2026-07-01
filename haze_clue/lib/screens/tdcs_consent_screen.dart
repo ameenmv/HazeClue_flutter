@@ -19,8 +19,8 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
   bool _isSubmitting = false;
 
   Future<void> _submitConsent(bool isActivated) async {
-    if (isActivated && (!_checklist.every((c) => c) || !_consentDataUsage || !_consentActivateTdcs)) {
-      showGlassToast(context, 'Please check all safety boxes and provide consent to activate tDCS');
+    if (isActivated && !_checklist.every((c) => c)) {
+      showGlassToast(context, 'Please check all safety boxes');
       return;
     }
 
@@ -28,7 +28,7 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
     try {
       final payload = {
         'isActivated': isActivated,
-        'dataUsageConsent': _consentDataUsage,
+        'dataUsageConsent': isActivated,
         'checklist': _checklist,
       };
       await ApiService.submitTdcsConsent(payload);
@@ -170,42 +170,6 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
                   icon: Icons.bolt,
                   title: "High Peak Performance",
                   subtitle: "More intensive stimulation for maximum cognitive demand activities.",
-                ),
-                const SizedBox(height: 32),
-
-                // --- Final Consent Section ---
-                const Text(
-                  "Final Consent",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _buildParagraph(
-                    "Your explicit consent is required to activate tDCS features within HazeClue."),
-                const SizedBox(height: 16),
-
-                GlassCard(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      children: [
-                        _buildSwitchItem(
-                          title: "Consent to Data Usage for Personalization",
-                          value: _consentDataUsage,
-                          onChanged: (val) => setState(() => _consentDataUsage = val),
-                        ),
-                        const Divider(color: Colors.white24, height: 24),
-                        _buildSwitchItem(
-                          title: "Consent to Activate tDCS Feature",
-                          value: _consentActivateTdcs,
-                          onChanged: (val) => setState(() => _consentActivateTdcs = val),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
                 const SizedBox(height: 40),
 

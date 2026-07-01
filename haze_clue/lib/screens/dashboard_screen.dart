@@ -1,42 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'my_devices_screen.dart';
-import 'concentration_puzzle_screen.dart';
-import 'notification_inbox_screen.dart';
-import '../services/api_service.dart';
 import 'training_screen.dart';
+import 'notification_inbox_screen.dart';
+import '../providers/dashboard_provider.dart';
 import '../widgets/glass_widgets.dart';
+import '../widgets/shimmer_loading.dart';
 import '../utils/transitions.dart';
 
-class DashboardContent extends StatefulWidget {
+class DashboardContent extends ConsumerWidget {
   const DashboardContent({super.key});
 
-  @override
-  State<DashboardContent> createState() => _DashboardContentState();
-}
-
-class _DashboardContentState extends State<DashboardContent> {
-  late Future<Map<String, dynamic>> _statsFuture;
-  late Future<List<dynamic>> _sessionsFuture;
-  late Future<List<dynamic>> _notificationsFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _refreshData();
-  }
-
-  void _refreshData() {
-    setState(() {
-      _statsFuture = ApiService.getDashboardStats();
-      _sessionsFuture = ApiService.getSessions();
-      _notificationsFuture = ApiService.getNotifications();
-    });
+  Future<void> _onRefresh(WidgetRef ref) async {
+    ref.invalidate(dashboardStatsProvider);
+    ref.invalidate(recentSessionsProvider);
+    ref.invalidate(notificationsProvider);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textColor = Theme.of(context).colorScheme.onSurface;
     final isLight = Theme.of(context).brightness == Brightness.light;
+    
+    final statsAsync = ref.watch(dashboardStatsProvider);
+    final sessionsAsync = ref.watch(recentSessionsProvider);
+    final unreadNotificationsCount = ref.watch(unreadNotificationsCountProvider);
 
     return Scaffold(
       backgroundColor: Colors.transparent, // Background transparent to let AnimatedBackground show
@@ -70,74 +58,56 @@ class _DashboardContentState extends State<DashboardContent> {
           ],
         ),
         actions: [
-          FutureBuilder<List<dynamic>>(
-            future: _notificationsFuture,
-            builder: (context, snapshot) {
-              int unreadCount = 0;
-              if (snapshot.hasData) {
-                unreadCount = snapshot.data!.where((n) => n['isRead'] == false).length;
-              }
-
-              Widget icon = Icon(
-                Icons.notifications_none_outlined,
-                color: textColor,
-                size: 28,
-              );
-
-              if (unreadCount > 0) {
-                icon = Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    icon,
-                    Positioned(
-                      right: -2,
-                      top: -2,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.redAccent,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Theme.of(context).colorScheme.surface, width: 1.5),
+          IconButton(
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(
+                  Icons.notifications_none_outlined,
+                  color: textColor,
+                  size: 28,
+                ),
+                if (unreadNotificationsCount > 0)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Theme.of(context).colorScheme.surface, width: 1.5),
+                      ),
+                      child: Text(
+                        unreadNotificationsCount > 9 ? '+9' : unreadNotificationsCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
                         ),
-                        child: Text(
-                          unreadCount > 9 ? '+9' : unreadCount.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                  ],
-                );
-              }
-
-              return IconButton(
-                icon: icon,
-                onPressed: () async {
-                  await Navigator.push(
-                    context,
-                    GlassPageRoute(
-                      page: const NotificationInboxScreen(),
-                    ),
-                  );
-                  _refreshData();
-                },
+                  ),
+              ],
+            ),
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                GlassPageRoute(
+                  page: const NotificationInboxScreen(),
+                ),
               );
+              ref.invalidate(notificationsProvider);
             },
           ),
           const SizedBox(width: 12),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () async {
-          _refreshData();
-          await Future.wait([_statsFuture, _sessionsFuture, _notificationsFuture]);
-        },
-        backgroundColor: const Color(0xFF1E1E2A),
-        color: const Color(0xFF8B5CF6),
+        onRefresh: () => _onRefresh(ref),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        color: Theme.of(context).colorScheme.primary,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -145,28 +115,22 @@ class _DashboardContentState extends State<DashboardContent> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              FutureBuilder<Map<String, dynamic>>(
-                future: _statsFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return SizedBox(
-                      height: 250,
-                      child: Center(child: CircularProgressIndicator(color: textColor)),
-                    );
-                  } else if (snapshot.hasError) {
-                    return SizedBox(
-                      height: 250,
-                      child: Center(child: Text("Failed to load stats", style: TextStyle(color: textColor))),
-                    );
-                  }
-                  
-                  final stats = snapshot.data ?? {};
+              
+              // Stats Card
+              statsAsync.when(
+                data: (stats) {
                   final focusPercentage = (stats['avgAttention'] ?? 100) / 100.0;
                   final focusLabel = '${(focusPercentage * 100).toInt()}%';
-
                   return _buildFocusCard(focusPercentage, focusLabel, textColor);
                 },
+                loading: () => const ShimmerFocusCard(),
+                error: (error, stack) => _buildErrorCard(
+                  "Failed to load stats", 
+                  textColor, 
+                  () => ref.invalidate(dashboardStatsProvider)
+                ),
               ),
+
               const SizedBox(height: 40),
               
               Text(
@@ -196,27 +160,48 @@ class _DashboardContentState extends State<DashboardContent> {
                 ],
               ),
               const SizedBox(height: 16),
+              
+              // Recent Activity List
               GlassCard(
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
-                  child: FutureBuilder<List<dynamic>>(
-                    future: _sessionsFuture,
-                    builder: (context, snapshot) {
-                      final textColor = Theme.of(context).colorScheme.onSurface;
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: CircularProgressIndicator(color: textColor));
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text("Failed to load activities", style: TextStyle(color: textColor)));
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  child: sessionsAsync.when(
+                    data: (sessions) {
+                      if (sessions.isEmpty) {
                         return Center(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 20),
-                            child: Text("No recent activities.", style: TextStyle(color: textColor.withOpacity(0.7))),
+                            child: Text(
+                              "No recent activities.", 
+                              style: TextStyle(color: textColor.withOpacity(0.7))
+                            ),
                           ),
                         );
                       }
-                      return _buildActivityList(snapshot.data!, textColor);
+                      return Column(
+                        children: sessions.take(3).map((session) {
+                          return _activityTile(
+                            Icons.trending_up, 
+                            session['title'] ?? 'Session Completed',
+                            session['status'] ?? 'Recently',
+                            textColor,
+                          );
+                        }).toList(),
+                      );
                     },
+                    loading: () => Column(
+                      children: const [
+                        ShimmerActivityTile(),
+                        ShimmerActivityTile(),
+                        ShimmerActivityTile(),
+                      ],
+                    ),
+                    error: (error, stack) => _buildErrorCard(
+                      "Failed to load activities", 
+                      textColor, 
+                      () => ref.invalidate(recentSessionsProvider),
+                      isSmall: true,
+                    ),
                   ),
                 ),
               ),
@@ -298,6 +283,35 @@ class _DashboardContentState extends State<DashboardContent> {
     );
   }
 
+  Widget _buildErrorCard(String message, Color textColor, VoidCallback onRetry, {bool isSmall = false}) {
+    return GlassCard(
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(isSmall ? 20 : 32),
+        child: Column(
+          children: [
+            Icon(Icons.error_outline, color: Colors.redAccent, size: isSmall ? 32 : 48),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: onRetry,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF8B5CF6),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              ),
+              child: const Text("Retry"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildQuickActions(BuildContext context, Color textColor) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -341,8 +355,9 @@ class _DashboardContentState extends State<DashboardContent> {
 
   Widget _actionItem(IconData icon, String label, Color textColor, {VoidCallback? onTap}) {
     return Expanded(
-      child: GestureDetector(
+      child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
         child: Column(
           children: [
             GlassCard(
@@ -367,19 +382,6 @@ class _DashboardContentState extends State<DashboardContent> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildActivityList(List<dynamic> sessions, Color textColor) {
-    return Column(
-      children: sessions.take(3).map((session) {
-        return _activityTile(
-          Icons.trending_up, 
-          session['title'] ?? 'Session Completed',
-          session['status'] ?? 'Recently',
-          textColor,
-        );
-      }).toList(),
     );
   }
 
