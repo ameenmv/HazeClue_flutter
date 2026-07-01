@@ -13,7 +13,6 @@ class AccountSecurityScreen extends StatefulWidget {
 }
 
 class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
-  bool _isTwoFactorEnabled = false;
   List<dynamic> _sessions = [];
   List<dynamic> _securityLogs = [];
   bool _isLoadingSessions = true;
@@ -131,54 +130,6 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // --- Authentication ---
-                _buildSectionTitle("Authentication", textColor),
-                const SizedBox(height: 12),
-                GlassCard(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Two-factor authentication",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: textColor,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                "Set up two-factor authentication",
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: textColor.withOpacity(0.6),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        CupertinoSwitch(
-                          value: _isTwoFactorEnabled,
-                          activeColor: const Color(0xFF8B5CF6),
-                          thumbColor: textColor,
-                          trackColor: textColor.withOpacity(0.2),
-                          onChanged: (val) {
-                            setState(() {
-                              _isTwoFactorEnabled = val;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
 
                 // --- Active Sessions ---
                 Row(

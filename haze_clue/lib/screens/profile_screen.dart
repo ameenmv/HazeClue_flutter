@@ -203,13 +203,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             );
                           },
                         ),
-                        _buildDivider(textColor),
-                        _buildMenuItem(
-                          icon: Icons.language,
-                          title: "Language",
-                          trailingText: "English",
-                          textColor: textColor,
-                          onTap: () {},
                         ),
                       ]),
                       const SizedBox(height: 20),

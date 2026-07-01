@@ -68,48 +68,75 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                     child: Column(
                       children: [
                         _buildFAQCategory(
-                          title: "General Queries",
+                          title: "EEG & Focus Monitoring",
                           count: "3",
                           initiallyExpanded: true,
                           textColor: textColor,
                           children: [
                             _buildFAQItem(
-                              question: "How do I get started with the EEG App?",
+                              question: "How does HazeClue measure my focus?",
                               answer:
-                                  "Download the app from your respective app store, create an account, and follow the on-screen setup instructions to pair your device.",
+                                  "HazeClue connects to EEG headbands to read your brainwaves in real-time, analyzing alpha and beta bands to accurately determine your concentration levels.",
                               textColor: textColor,
                             ),
                             _buildFAQItem(
-                              question: "What devices are compatible with the app?",
+                              question: "What do the Focus percentages mean?",
                               answer:
-                                  "The EEG App is compatible with all major iOS and Android smartphones and tablets running version 12.0 or higher for iOS, and 8.0 or higher for Android. Specific hardware models are listed in the app's settings.",
+                                  "A higher percentage indicates deep concentration (dominance of Beta waves), while lower percentages might indicate relaxation or distraction.",
                               textColor: textColor,
                             ),
                             _buildFAQItem(
-                              question: "Is my data secure?",
+                              question: "How to wear the EEG device correctly?",
                               answer:
-                                  "Yes, we use industry-standard encryption and security protocols to protect your personal and health data. For more details, please refer to our privacy policy.",
+                                  "Ensure the sensors make direct contact with your skin, particularly your forehead, and that any reference clips are securely attached for accurate readings.",
                               textColor: textColor,
                             ),
                           ],
                         ),
                         _buildDivider(textColor),
                         _buildFAQCategory(
-                          title: "Technical Support",
+                          title: "tDCS & Cognitive Training",
+                          count: "3",
+                          initiallyExpanded: false,
+                          textColor: textColor,
+                          children: [
+                            _buildFAQItem(
+                              question: "What is tDCS and is it safe?",
+                              answer:
+                                  "Transcranial Direct Current Stimulation (tDCS) delivers a mild, safe electrical current to stimulate specific brain areas. HazeClue strictly enforces safe intensity limits (max 2mA).",
+                              textColor: textColor,
+                            ),
+                            _buildFAQItem(
+                              question: "How often should I run tDCS sessions?",
+                              answer:
+                                  "We recommend starting with 2-3 sessions per week, with each session lasting between 10 to 20 minutes, depending on the cognitive training module you select.",
+                              textColor: textColor,
+                            ),
+                            _buildFAQItem(
+                              question: "Can I use Binaural Beats with tDCS?",
+                              answer:
+                                  "Absolutely! Combining our Binaural Beats presets with tDCS can synergistically enhance either relaxation or focus, depending on the frequencies selected.",
+                              textColor: textColor,
+                            ),
+                          ],
+                        ),
+                        _buildDivider(textColor),
+                        _buildFAQCategory(
+                          title: "Troubleshooting",
                           count: "2",
                           initiallyExpanded: false,
                           textColor: textColor,
                           children: [
                             _buildFAQItem(
-                              question: "How do I reset my headset?",
+                              question: "My device keeps disconnecting",
                               answer:
-                                  "Press and hold the power button for 10 seconds until the LED light flashes red and blue.",
+                                  "Ensure your headset is fully charged and within Bluetooth range. You can easily manage connected devices in the 'My Devices' tab on the Dashboard.",
                               textColor: textColor,
                             ),
                             _buildFAQItem(
-                              question: "App is crashing constantly",
+                              question: "App isn't showing live focus data",
                               answer:
-                                  "Please ensure you have the latest version installed. If the problem persists, try reinstalling the app.",
+                                  "Check the sensor quality. If the signal is poor, try wiping your forehead and the sensors with a damp cloth to improve conductivity and Bluetooth transmission.",
                               textColor: textColor,
                             ),
                           ],

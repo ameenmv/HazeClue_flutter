@@ -96,7 +96,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
     showDialog(
       context: context,
       builder: (ctx) {
-        int selectedDuration = 15;
+        int selectedDuration = 2;
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
@@ -113,7 +113,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [10, 15, 20].map((duration) {
+                    children: [1, 2, 3].map((duration) {
                       final isSelected = selectedDuration == duration;
                       return GestureDetector(
                         onTap: () {
