@@ -95,27 +95,27 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                         ),
                         _buildDivider(textColor),
                         _buildFAQCategory(
-                          title: "tDCS & Cognitive Training",
+                          title: "Simulation & Cognitive Training",
                           count: "3",
                           initiallyExpanded: false,
                           textColor: textColor,
                           children: [
                             _buildFAQItem(
-                              question: "What is tDCS and is it safe?",
+                              question: "What is Simulation and is it safe?",
                               answer:
-                                  "Transcranial Direct Current Stimulation (tDCS) delivers a mild, safe electrical current to stimulate specific brain areas. HazeClue strictly enforces safe intensity limits (max 2mA).",
+                                  "Cognitive Simulation (Simulation) delivers a mild, safe electrical current to stimulate specific brain areas. HazeClue strictly enforces safe intensity limits (max 2mA).",
                               textColor: textColor,
                             ),
                             _buildFAQItem(
-                              question: "How often should I run tDCS sessions?",
+                              question: "How often should I run Simulation sessions?",
                               answer:
                                   "We recommend starting with 2-3 sessions per week, with each session lasting between 10 to 20 minutes, depending on the cognitive training module you select.",
                               textColor: textColor,
                             ),
                             _buildFAQItem(
-                              question: "Can I use Binaural Beats with tDCS?",
+                              question: "Can I use Binaural Beats with Simulation?",
                               answer:
-                                  "Absolutely! Combining our Binaural Beats presets with tDCS can synergistically enhance either relaxation or focus, depending on the frequencies selected.",
+                                  "Absolutely! Combining our Binaural Beats presets with Simulation can synergistically enhance either relaxation or focus, depending on the frequencies selected.",
                               textColor: textColor,
                             ),
                           ],

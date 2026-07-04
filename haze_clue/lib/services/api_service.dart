@@ -344,7 +344,7 @@ class ApiService {
       body: jsonEncode(data),
     );
     if (res.statusCode != 200 && res.statusCode != 201) {
-      throw Exception('Failed to submit TDCS consent');
+      throw Exception('Failed to submit SIMULATION consent');
     }
   }
 

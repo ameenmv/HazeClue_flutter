@@ -84,7 +84,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
     if (!mounted) return;
 
     if (!hasTdcs) {
-      showGlassToast(context, "Please connect a tDCS device first.");
+      showGlassToast(context, "Please connect a Simulation device first.");
       Navigator.push(
         context,
         GlassPageRoute(page: const MyDevicesScreen()),
@@ -107,7 +107,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    "Choose the duration for your tDCS stimulation session:",
+                    "Choose the duration for your Simulation stimulation session:",
                     style: TextStyle(color: Colors.white70),
                   ),
                   const SizedBox(height: 24),
@@ -237,13 +237,13 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
           const SizedBox(height: 40),
           Text(
-            "tDCS Settings",
+            "Simulation Settings",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
           ),
           const SizedBox(height: 16),
           _isLoading
               ? Center(child: CircularProgressIndicator(color: textColor))
-              : _buildTDCSSettings(textColor),
+              : _buildSIMULATIONSettings(textColor),
           const SizedBox(height: 100), // Padding for bottom nav
         ],
       ),
@@ -370,7 +370,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
     );
   }
 
-  Widget _buildTDCSSettings(Color textColor) {
+  Widget _buildSIMULATIONSettings(Color textColor) {
     return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -413,7 +413,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
             SizedBox(
               width: double.infinity,
               child: GlassButton(
-                text: "Start tDCS Session",
+                text: "Start Simulation Session",
                 onPressed: _startTdcsSession,
                 icon: Icons.bolt,
               ),

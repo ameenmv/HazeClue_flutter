@@ -114,7 +114,7 @@ class _TdcsSessionScreenState extends State<TdcsSessionScreen> with TickerProvid
     try {
       // Save session to backend
       final sessionData = await ApiService.createSession(
-        "tDCS Stimulation",
+        "Simulation Stimulation",
         widget.durationMinutes,
         null,
       );
@@ -142,7 +142,7 @@ class _TdcsSessionScreenState extends State<TdcsSessionScreen> with TickerProvid
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E2A),
         title: const Text("Stop Session", style: TextStyle(color: Colors.white)),
-        content: const Text("Are you sure you want to stop the tDCS stimulation early?", style: TextStyle(color: Colors.white70)),
+        content: const Text("Are you sure you want to stop the Simulation stimulation early?", style: TextStyle(color: Colors.white70)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -185,7 +185,7 @@ class _TdcsSessionScreenState extends State<TdcsSessionScreen> with TickerProvid
         elevation: 0,
         leading: BackButton(color: textColor),
         title: Text(
-          "tDCS Session",
+          "Simulation Session",
           style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,

@@ -59,7 +59,7 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "tDCS Consent",
+          "Simulation Consent",
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -76,7 +76,7 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
               children: [
                 // --- Intro Section ---
                 const Text(
-                  "Understanding tDCS",
+                  "Understanding Simulation",
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -85,11 +85,11 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
                 ),
                 const SizedBox(height: 12),
                 _buildParagraph(
-                    "tDCS is a non-invasive brain stimulation method that uses a low-level, constant electrical current to stimulate specific brain areas."),
+                    "Simulation is a non-invasive brain stimulation method that uses a low-level, constant electrical current to stimulate specific brain areas."),
                 _buildParagraph(
-                    "When used with HazeClue, tDCS aims to enhance cognitive functions such as focus, attention, and learning, helping you achieve peak mental performance in your gamified challenges. The effects are typically subtle and cumulative."),
+                    "When used with HazeClue, Simulation aims to enhance cognitive functions such as focus, attention, and learning, helping you achieve peak mental performance in your gamified challenges. The effects are typically subtle and cumulative."),
                 _buildParagraph(
-                    "It is important to use tDCS responsibly and according to guidelines. Your safety is our top priority."),
+                    "It is important to use Simulation responsibly and according to guidelines. Your safety is our top priority."),
                 const SizedBox(height: 32),
 
                 // --- Checklist Section ---
@@ -103,7 +103,7 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
                 ),
                 const SizedBox(height: 8),
                 _buildParagraph(
-                    "Before activating tDCS, please confirm the following to ensure safe and effective use."),
+                    "Before activating Simulation, please confirm the following to ensure safe and effective use."),
                 const SizedBox(height: 16),
 
                 GlassCard(
@@ -114,12 +114,12 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
                         _buildChecklistItem(
                           index: 0,
                           title: "I have consulted a medical professional",
-                          subtitle: "Ensure tDCS is suitable for your individual health conditions.",
+                          subtitle: "Ensure Simulation is suitable for your individual health conditions.",
                         ),
                         _buildChecklistItem(
                           index: 1,
                           title: "I have no metallic implants or electronic devices in my head/body",
-                          subtitle: "Such devices can interfere with tDCS, posing safety risks.",
+                          subtitle: "Such devices can interfere with Simulation, posing safety risks.",
                         ),
                         _buildChecklistItem(
                           index: 2,
@@ -129,7 +129,7 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
                         _buildChecklistItem(
                           index: 3,
                           title: "I am not pregnant or breastfeeding",
-                          subtitle: "tDCS safety during pregnancy/breastfeeding is not established.",
+                          subtitle: "Simulation safety during pregnancy/breastfeeding is not established.",
                         ),
                         _buildChecklistItem(
                           index: 4,
@@ -144,7 +144,7 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
 
                 // --- Presets Section ---
                 const Text(
-                  "tDCS Intensity Presets",
+                  "Simulation Intensity Presets",
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -179,7 +179,7 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
                   : Column(
                       children: [
                         GlassButton(
-                          text: "Activate tDCS & Continue",
+                          text: "Activate Simulation & Continue",
                           onPressed: () => _submitConsent(true),
                         ),
                         const SizedBox(height: 16),
