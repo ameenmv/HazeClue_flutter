@@ -33,11 +33,11 @@ flutter_native_splash:
   android: true
   ios: true
   color: "#FFFFFF"
-  image: assets/images/hazecluelogo.jpeg
+  image: assets/images/logo.png
 
   android_12:
     color: "#FFFFFF"
-    image: assets/images/hazecluelogo.jpeg
+    image: assets/images/logo.png
 
 flutter:
   uses-material-design: true
@@ -47,4 +47,4 @@ flutter:
     - assets/images/Intro.png
     - assets/images/Intro1.png
     - assets/images/Intro2.png
-    - assets/images/hazecluelogo.jpeg
+    - assets/images/logo.png
