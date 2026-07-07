@@ -40,8 +40,8 @@ void main() {
     test('calculatePsd returns correct length list', () {
       List<double> dummyChannel = List.filled(256, 1.0);
       var psd = calculator.calculatePsd(dummyChannel);
-      // For realFft of size 256, we expect (256/2)+1 = 129 bins
-      expect(psd.length, 129); 
+      // For full Radix-2 FFT of size 256, we expect 256 bins
+      expect(psd.length, 256); 
     });
 
     test('reset function correctly resets state', () {

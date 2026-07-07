@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'package:fftea/fftea.dart';
 
 class FocusCalculator {
   static const int sampleRate = 128; // Hz
@@ -18,7 +17,7 @@ class FocusCalculator {
   // Smoothing factor for EMA (تنعيم النتائج)
   final double smoothingFactor = 0.2;
 
-  // Calculate PSD for a single channel buffer using Welch's method (single window for simplicity)
+  // Calculate PSD for a single channel buffer using Welch's method
   List<double> calculatePsd(List<double> channelData) {
     // Apply Hann window
     final windowedData = List<double>.from(channelData);
@@ -26,14 +25,58 @@ class FocusCalculator {
       windowedData[i] *= 0.5 * (1 - cos(2 * pi * i / (windowedData.length - 1)));
     }
 
-    final fft = FFT(windowedData.length);
-    final freqs = fft.realFft(windowedData);
-    
-    // Calculate power (magnitude squared)
+    return _fftPower(windowedData);
+  }
+
+  // Native Radix-2 FFT Power calculation
+  List<double> _fftPower(List<double> realInput) {
+    int n = realInput.length;
+    List<double> real = List.from(realInput);
+    List<double> imag = List.filled(n, 0.0);
+
+    int j = 0;
+    for (int i = 0; i < n - 1; i++) {
+      if (i < j) {
+        double tempReal = real[i];
+        real[i] = real[j];
+        real[j] = tempReal;
+      }
+      int m = n >> 1;
+      while (m <= j) {
+        j -= m;
+        m >>= 1;
+      }
+      j += m;
+    }
+
+    int l2 = 1;
+    for (int l = 0; (1 << l) < n; l++) {
+      int l1 = l2;
+      l2 <<= 1;
+      double u1 = 1.0;
+      double u2 = 0.0;
+      double w1 = cos(pi / l1);
+      double w2 = -sin(pi / l1);
+      for (int j = 0; j < l1; j++) {
+        for (int i = j; i < n; i += l2) {
+          int i1 = i + l1;
+          double t1 = u1 * real[i1] - u2 * imag[i1];
+          double t2 = u1 * imag[i1] + u2 * real[i1];
+          real[i1] = real[i] - t1;
+          imag[i1] = imag[i] - t2;
+          real[i] += t1;
+          imag[i] += t2;
+        }
+        double z = u1 * w1 - u2 * w2;
+        u2 = u1 * w2 + u2 * w1;
+        u1 = z;
+      }
+    }
+
     List<double> psd = [];
-    for (int i = 0; i < freqs.length; i++) {
-      final mag = freqs[i].magnitude();
-      psd.add((mag * mag) / windowedData.length); 
+    // Power spectrum is magnitude squared divided by n
+    for (int i = 0; i < n; i++) {
+      psd.add((real[i] * real[i] + imag[i] * imag[i]) / n);
     }
     return psd;
   }
