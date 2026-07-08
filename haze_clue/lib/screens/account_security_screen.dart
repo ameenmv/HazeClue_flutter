@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import '../services/api_service.dart';
 import 'intro_screen.dart';
 import 'change_password_screen.dart';
@@ -57,7 +56,9 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
     try {
       await ApiService.revokeSession(id);
       _loadSessions(); // Refresh list
-      if (mounted) showGlassToast(context, "Session revoked successfully", isError: false);
+      if (mounted) {
+        showGlassToast(context, "Session revoked successfully", isError: false);
+      }
     } catch (e) {
       if (mounted) showGlassToast(context, e.toString());
     }
@@ -67,7 +68,13 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
     try {
       await ApiService.revokeOtherSessions();
       _loadSessions(); // Refresh list
-      if (mounted) showGlassToast(context, "Other sessions revoked successfully", isError: false);
+      if (mounted) {
+        showGlassToast(
+          context,
+          "Other sessions revoked successfully",
+          isError: false,
+        );
+      }
     } catch (e) {
       if (mounted) showGlassToast(context, e.toString());
     }
@@ -111,12 +118,16 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                     title: Text(
                       "Change password",
                       style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: textColor),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: textColor,
+                      ),
                     ),
-                    trailing: Icon(Icons.arrow_forward_ios,
-                        size: 16, color: textColor.withOpacity(0.5)),
+                    trailing: Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: textColor.withOpacity(0.5),
+                    ),
                     onTap: () {
                       Navigator.push(
                         context,
@@ -125,11 +136,13 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                         ),
                       );
                     },
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 4,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
-
 
                 // --- Active Sessions ---
                 Row(
@@ -150,12 +163,15 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                _isLoadingSessions 
-                  ? Center(child: CircularProgressIndicator(color: textColor))
-                  : _sessions.isEmpty
+                _isLoadingSessions
+                    ? Center(child: CircularProgressIndicator(color: textColor))
+                    : _sessions.isEmpty
                     ? Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text("No active sessions found.", style: TextStyle(color: textColor.withOpacity(0.7))),
+                        child: Text(
+                          "No active sessions found.",
+                          style: TextStyle(color: textColor.withOpacity(0.7)),
+                        ),
                       )
                     : GlassCard(
                         child: Column(
@@ -163,19 +179,26 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                             final index = entry.key;
                             final session = entry.value;
                             final isCurrent = session['isCurrent'] == true;
-                            
+
                             return Column(
                               children: [
                                 _buildSessionItem(
                                   id: session['id'],
-                                  deviceName: session['deviceName'] + (isCurrent ? " (Current)" : ""),
-                                  location: session['location'] ?? "Unknown Location",
-                                  time: "Started: ${DateTime.parse(session['loginTime']).toLocal().toString().split('.')[0]}",
+                                  deviceName:
+                                      session['deviceName'] +
+                                      (isCurrent ? " (Current)" : ""),
+                                  location:
+                                      session['location'] ?? "Unknown Location",
+                                  time:
+                                      "Started: ${DateTime.parse(session['loginTime']).toLocal().toString().split('.')[0]}",
                                   isCurrent: isCurrent,
                                   textColor: textColor,
                                 ),
                                 if (index < _sessions.length - 1)
-                                  Divider(color: Colors.white.withOpacity(0.1), height: 1),
+                                  Divider(
+                                    color: Colors.white.withOpacity(0.1),
+                                    height: 1,
+                                  ),
                               ],
                             );
                           }).toList(),
@@ -187,11 +210,14 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                 _buildSectionTitle("Recent Security Activity", textColor),
                 const SizedBox(height: 12),
                 _isLoadingLogs
-                  ? Center(child: CircularProgressIndicator(color: textColor))
-                  : _securityLogs.isEmpty
+                    ? Center(child: CircularProgressIndicator(color: textColor))
+                    : _securityLogs.isEmpty
                     ? Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text("No recent security activity.", style: TextStyle(color: textColor.withOpacity(0.7))),
+                        child: Text(
+                          "No recent security activity.",
+                          style: TextStyle(color: textColor.withOpacity(0.7)),
+                        ),
                       )
                     : GlassCard(
                         child: Column(
@@ -199,20 +225,26 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                             final index = entry.key;
                             final log = entry.value;
                             final event = log['event'].toString();
-                            final icon = event.toLowerCase().contains("password") 
-                                         ? Icons.shield_outlined 
-                                         : Icons.info_outline;
+                            final icon =
+                                event.toLowerCase().contains("password")
+                                ? Icons.shield_outlined
+                                : Icons.info_outline;
 
                             return Column(
                               children: [
                                 _buildActivityItem(
                                   icon: icon,
                                   title: event,
-                                  time: DateTime.parse(log['createdAt']).toLocal().toString().split('.')[0],
+                                  time: DateTime.parse(
+                                    log['createdAt'],
+                                  ).toLocal().toString().split('.')[0],
                                   textColor: textColor,
                                 ),
                                 if (index < _securityLogs.length - 1)
-                                  Divider(color: textColor.withOpacity(0.1), height: 1),
+                                  Divider(
+                                    color: textColor.withOpacity(0.1),
+                                    height: 1,
+                                  ),
                               ],
                             );
                           }).toList(),
@@ -229,8 +261,11 @@ class _AccountSecurityScreenState extends State<AccountSecurityScreen> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.lightbulb_outline,
-                                color: Color(0xFF8B5CF6), size: 24),
+                            const Icon(
+                              Icons.lightbulb_outline,
+                              color: Color(0xFF8B5CF6),
+                              size: 24,
+                            ),
                             const SizedBox(width: 12),
                             Text(
                               "Security Tip",

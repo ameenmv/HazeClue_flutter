@@ -14,8 +14,8 @@ class TdcsConsentScreen extends StatefulWidget {
 
 class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
   final List<bool> _checklist = List.generate(5, (_) => false);
-  bool _consentDataUsage = false;
-  bool _consentActivateTdcs = false;
+  final bool _consentDataUsage = false;
+  final bool _consentActivateTdcs = false;
   bool _isSubmitting = false;
 
   Future<void> _submitConsent(bool isActivated) async {
@@ -85,11 +85,14 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
                 ),
                 const SizedBox(height: 12),
                 _buildParagraph(
-                    "Simulation is a non-invasive brain stimulation method that uses a low-level, constant electrical current to stimulate specific brain areas."),
+                  "Simulation is a non-invasive brain stimulation method that uses a low-level, constant electrical current to stimulate specific brain areas.",
+                ),
                 _buildParagraph(
-                    "When used with HazeClue, Simulation aims to enhance cognitive functions such as focus, attention, and learning, helping you achieve peak mental performance in your gamified challenges. The effects are typically subtle and cumulative."),
+                  "When used with HazeClue, Simulation aims to enhance cognitive functions such as focus, attention, and learning, helping you achieve peak mental performance in your gamified challenges. The effects are typically subtle and cumulative.",
+                ),
                 _buildParagraph(
-                    "It is important to use Simulation responsibly and according to guidelines. Your safety is our top priority."),
+                  "It is important to use Simulation responsibly and according to guidelines. Your safety is our top priority.",
+                ),
                 const SizedBox(height: 32),
 
                 // --- Checklist Section ---
@@ -103,7 +106,8 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
                 ),
                 const SizedBox(height: 8),
                 _buildParagraph(
-                    "Before activating Simulation, please confirm the following to ensure safe and effective use."),
+                  "Before activating Simulation, please confirm the following to ensure safe and effective use.",
+                ),
                 const SizedBox(height: 16),
 
                 GlassCard(
@@ -114,27 +118,35 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
                         _buildChecklistItem(
                           index: 0,
                           title: "I have consulted a medical professional",
-                          subtitle: "Ensure Simulation is suitable for your individual health conditions.",
+                          subtitle:
+                              "Ensure Simulation is suitable for your individual health conditions.",
                         ),
                         _buildChecklistItem(
                           index: 1,
-                          title: "I have no metallic implants or electronic devices in my head/body",
-                          subtitle: "Such devices can interfere with Simulation, posing safety risks.",
+                          title:
+                              "I have no metallic implants or electronic devices in my head/body",
+                          subtitle:
+                              "Such devices can interfere with Simulation, posing safety risks.",
                         ),
                         _buildChecklistItem(
                           index: 2,
-                          title: "My scalp/skin is healthy and free from cuts, lesions, or irritation",
-                          subtitle: "Healthy skin is crucial for proper electrode contact and safety.",
+                          title:
+                              "My scalp/skin is healthy and free from cuts, lesions, or irritation",
+                          subtitle:
+                              "Healthy skin is crucial for proper electrode contact and safety.",
                         ),
                         _buildChecklistItem(
                           index: 3,
                           title: "I am not pregnant or breastfeeding",
-                          subtitle: "Simulation safety during pregnancy/breastfeeding is not established.",
+                          subtitle:
+                              "Simulation safety during pregnancy/breastfeeding is not established.",
                         ),
                         _buildChecklistItem(
                           index: 4,
-                          title: "I understand the potential risks and side effects",
-                          subtitle: "Familiarize yourself with possible mild sensations or rare adverse effects.",
+                          title:
+                              "I understand the potential risks and side effects",
+                          subtitle:
+                              "Familiarize yourself with possible mild sensations or rare adverse effects.",
                         ),
                       ],
                     ),
@@ -153,43 +165,49 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
                 ),
                 const SizedBox(height: 8),
                 _buildParagraph(
-                    "Choose an intensity level based on your comfort and desired cognitive boost."),
+                  "Choose an intensity level based on your comfort and desired cognitive boost.",
+                ),
                 const SizedBox(height: 16),
 
                 _buildPresetCard(
                   icon: Icons.flash_on,
                   title: "Low Focus",
-                  subtitle: "Gentle stimulation for mild cognitive enhancement and relaxation.",
+                  subtitle:
+                      "Gentle stimulation for mild cognitive enhancement and relaxation.",
                 ),
                 _buildPresetCard(
                   icon: Icons.psychology,
                   title: "Medium Concentration",
-                  subtitle: "Balanced current for enhanced attention and sustained focus.",
+                  subtitle:
+                      "Balanced current for enhanced attention and sustained focus.",
                 ),
                 _buildPresetCard(
                   icon: Icons.bolt,
                   title: "High Peak Performance",
-                  subtitle: "More intensive stimulation for maximum cognitive demand activities.",
+                  subtitle:
+                      "More intensive stimulation for maximum cognitive demand activities.",
                 ),
                 const SizedBox(height: 40),
 
                 // --- Buttons ---
                 _isSubmitting
-                  ? const Center(child: CircularProgressIndicator(color: Colors.white))
-                  : Column(
-                      children: [
-                        GlassButton(
-                          text: "Activate Simulation & Continue",
-                          onPressed: () => _submitConsent(true),
-                        ),
-                        const SizedBox(height: 16),
-                        GlassButton(
-                          text: "Opt Out Completely",
-                          isOutlined: true,
-                          onPressed: () => _submitConsent(false),
-                        ),
-                      ],
-                    ),
+                    ? const Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      )
+                    : Column(
+                        children: [
+                          GlassButton(
+                            text: "Activate Simulation & Continue",
+                            onPressed: () => _submitConsent(true),
+                          ),
+                          const SizedBox(height: 16),
+                          GlassButton(
+                            text: "Opt Out Completely",
+                            isOutlined: true,
+                            onPressed: () => _submitConsent(false),
+                          ),
+                        ],
+                      ),
                 const SizedBox(height: 40),
               ],
             ),
@@ -235,7 +253,10 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
               },
               activeColor: const Color(0xFF8B5CF6),
               checkColor: Colors.white,
-              side: BorderSide(color: Colors.white.withOpacity(0.5), width: 1.5),
+              side: BorderSide(
+                color: Colors.white.withOpacity(0.5),
+                width: 1.5,
+              ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(6),
               ),
@@ -344,9 +365,9 @@ class _TdcsConsentScreenState extends State<TdcsConsentScreen> {
         ),
         CupertinoSwitch(
           value: value,
-          activeColor: const Color(0xFF8B5CF6),
+          activeTrackColor: const Color(0xFF8B5CF6),
           thumbColor: Colors.white,
-          trackColor: Colors.white.withOpacity(0.2),
+          inactiveTrackColor: Colors.white.withOpacity(0.2),
           onChanged: onChanged,
         ),
       ],

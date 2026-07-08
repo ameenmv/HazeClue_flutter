@@ -13,7 +13,8 @@ class SignUpScreen extends StatefulWidget {
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderStateMixin {
+class _SignUpScreenState extends State<SignUpScreen>
+    with SingleTickerProviderStateMixin {
   bool _isLoading = false;
 
   final _nameController = TextEditingController();
@@ -36,9 +37,12 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
   String? _confirmPasswordError;
 
   void _validateName(String val) {
-    if (val.isEmpty) setState(() => _nameError = null);
-    else if (val.length < 3) setState(() => _nameError = 'Name must be at least 3 characters');
-    else setState(() => _nameError = null);
+    if (val.isEmpty) {
+      setState(() => _nameError = null);
+    } else if (val.length < 3)
+      setState(() => _nameError = 'Name must be at least 3 characters');
+    else
+      setState(() => _nameError = null);
   }
 
   void _validateEmail(String val) {
@@ -67,8 +71,14 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
-    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOutCubic);
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOutCubic,
+    );
     _fadeController.forward();
 
     _passwordController.addListener(_validatePassword);
@@ -82,10 +92,14 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
       _hasLowercase = text.contains(RegExp(r'[a-z]'));
       _hasDigit = text.contains(RegExp(r'[0-9]'));
       _hasSpecialChar = text.contains(RegExp(r'[^a-zA-Z0-9]'));
-      
+
       if (text.isEmpty) {
         _passwordError = null;
-      } else if (!_hasMinLength || !_hasUppercase || !_hasLowercase || !_hasDigit || !_hasSpecialChar) {
+      } else if (!_hasMinLength ||
+          !_hasUppercase ||
+          !_hasLowercase ||
+          !_hasDigit ||
+          !_hasSpecialChar) {
         _passwordError = 'Please meet all password requirements';
       } else {
         _passwordError = null;
@@ -110,16 +124,27 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
   Future<void> _handleSignUp() async {
     if (_nameController.text.isEmpty ||
         _emailController.text.isEmpty ||
-        _passwordController.text.isEmpty || 
+        _passwordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
-      if (_nameController.text.isEmpty) setState(() => _nameError = 'Name cannot be empty');
-      if (_emailController.text.isEmpty) setState(() => _emailError = 'Email cannot be empty');
-      if (_passwordController.text.isEmpty) setState(() => _passwordError = 'Password cannot be empty');
-      if (_confirmPasswordController.text.isEmpty) setState(() => _confirmPasswordError = 'Please confirm your password');
+      if (_nameController.text.isEmpty) {
+        setState(() => _nameError = 'Name cannot be empty');
+      }
+      if (_emailController.text.isEmpty) {
+        setState(() => _emailError = 'Email cannot be empty');
+      }
+      if (_passwordController.text.isEmpty) {
+        setState(() => _passwordError = 'Password cannot be empty');
+      }
+      if (_confirmPasswordController.text.isEmpty) {
+        setState(() => _confirmPasswordError = 'Please confirm your password');
+      }
       return;
     }
 
-    if (_nameError != null || _emailError != null || _passwordError != null || _confirmPasswordError != null) {
+    if (_nameError != null ||
+        _emailError != null ||
+        _passwordError != null ||
+        _confirmPasswordError != null) {
       return;
     }
 
@@ -168,15 +193,24 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
 
   Widget _buildPasswordCriteria() {
     if (_passwordController.text.isEmpty) return const SizedBox.shrink();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildPasswordCriteriaRow("At least 5 characters", _hasMinLength),
-        _buildPasswordCriteriaRow("At least one uppercase letter", _hasUppercase),
-        _buildPasswordCriteriaRow("At least one lowercase letter", _hasLowercase),
+        _buildPasswordCriteriaRow(
+          "At least one uppercase letter",
+          _hasUppercase,
+        ),
+        _buildPasswordCriteriaRow(
+          "At least one lowercase letter",
+          _hasLowercase,
+        ),
         _buildPasswordCriteriaRow("At least one number", _hasDigit),
-        _buildPasswordCriteriaRow("At least one special character", _hasSpecialChar),
+        _buildPasswordCriteriaRow(
+          "At least one special character",
+          _hasSpecialChar,
+        ),
       ],
     );
   }
@@ -197,11 +231,17 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 20.0,
+              ),
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: SlideTransition(
-                  position: Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(_fadeAnimation),
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0.1),
+                    end: Offset.zero,
+                  ).animate(_fadeAnimation),
                   child: GlassCard(
                     child: Padding(
                       padding: const EdgeInsets.all(32.0),
@@ -223,10 +263,13 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                           Text(
                             "Create an account to start your journey",
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 14),
+                            style: TextStyle(
+                              color: textColor.withOpacity(0.7),
+                              fontSize: 14,
+                            ),
                           ),
                           const SizedBox(height: 40),
-                          
+
                           GlassTextField(
                             label: "Name",
                             hint: "John Doe",
@@ -267,32 +310,69 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                             onChanged: _validateConfirmPassword,
                           ),
                           const SizedBox(height: 40),
-                          
+
                           _isLoading
-                              ? Center(child: CircularProgressIndicator(color: textColor))
-                              : GlassButton(text: "Sign Up", onPressed: _handleSignUp),
-                          
+                              ? Center(
+                                  child: CircularProgressIndicator(
+                                    color: textColor,
+                                  ),
+                                )
+                              : GlassButton(
+                                  text: "Sign Up",
+                                  onPressed: _handleSignUp,
+                                ),
+
                           const SizedBox(height: 30),
                           Row(
                             children: [
-                              Expanded(child: Divider(color: textColor.withOpacity(0.2))),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text("Or sign up with", style: TextStyle(color: textColor.withOpacity(0.5))),
+                              Expanded(
+                                child: Divider(
+                                  color: textColor.withOpacity(0.2),
+                                ),
                               ),
-                              Expanded(child: Divider(color: textColor.withOpacity(0.2))),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                child: Text(
+                                  "Or sign up with",
+                                  style: TextStyle(
+                                    color: textColor.withOpacity(0.5),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Divider(
+                                  color: textColor.withOpacity(0.2),
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 24),
-                          
+
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              _buildGlassSocial(Icons.facebook, Colors.blueAccent, textColor, isLight),
+                              _buildGlassSocial(
+                                Icons.facebook,
+                                Colors.blueAccent,
+                                textColor,
+                                isLight,
+                              ),
                               const SizedBox(width: 20),
-                              _buildGlassSocial(Icons.g_mobiledata, Colors.redAccent, textColor, isLight),
+                              _buildGlassSocial(
+                                Icons.g_mobiledata,
+                                Colors.redAccent,
+                                textColor,
+                                isLight,
+                              ),
                               const SizedBox(width: 20),
-                              _buildGlassSocial(Icons.apple, textColor, textColor, isLight),
+                              _buildGlassSocial(
+                                Icons.apple,
+                                textColor,
+                                textColor,
+                                isLight,
+                              ),
                             ],
                           ),
                           const SizedBox(height: 20),
@@ -309,12 +389,19 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildGlassSocial(IconData icon, Color color, Color textColor, bool isLight) {
+  Widget _buildGlassSocial(
+    IconData icon,
+    Color color,
+    Color textColor,
+    bool isLight,
+  ) {
     return Container(
       width: 50,
       height: 50,
       decoration: BoxDecoration(
-        color: isLight ? Colors.white.withOpacity(0.5) : Colors.white.withOpacity(0.05),
+        color: isLight
+            ? Colors.white.withOpacity(0.5)
+            : Colors.white.withOpacity(0.05),
         border: Border.all(color: textColor.withOpacity(0.1)),
         shape: BoxShape.circle,
       ),

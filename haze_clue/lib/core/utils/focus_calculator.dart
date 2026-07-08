@@ -8,9 +8,9 @@ class FocusCalculator {
   double _baseline = 1.0;
   double _minEi = double.maxFinite;
   double _maxEi = -double.maxFinite;
-  
+
   bool isCalibrating = true;
-  List<double> _calibrationBuffer = [];
+  final List<double> _calibrationBuffer = [];
   int _calibrationSeconds = 0;
   final int maxCalibrationSeconds = 60; // Wait 60s for baseline
 
@@ -22,7 +22,8 @@ class FocusCalculator {
     // Apply Hann window
     final windowedData = List<double>.from(channelData);
     for (int i = 0; i < windowedData.length; i++) {
-      windowedData[i] *= 0.5 * (1 - cos(2 * pi * i / (windowedData.length - 1)));
+      windowedData[i] *=
+          0.5 * (1 - cos(2 * pi * i / (windowedData.length - 1)));
     }
 
     return _fftPower(windowedData);
@@ -85,10 +86,10 @@ class FocusCalculator {
   double getBandPower(List<double> psd, double lowFreq, double highFreq) {
     double power = 0.0;
     double freqResolution = sampleRate / bufferSize;
-    
+
     int startIndex = (lowFreq / freqResolution).floor();
     int endIndex = (highFreq / freqResolution).ceil();
-    
+
     for (int i = startIndex; i <= endIndex && i < psd.length; i++) {
       power += psd[i];
     }
@@ -129,14 +130,16 @@ class FocusCalculator {
     if (isCalibrating) {
       _calibrationBuffer.add(currentEi);
       _calibrationSeconds++;
-      
+
       // If we've collected enough seconds, finalize the baseline
       if (_calibrationSeconds >= maxCalibrationSeconds) {
         isCalibrating = false;
-        _baseline = _calibrationBuffer.reduce((a, b) => a + b) / _calibrationBuffer.length;
+        _baseline =
+            _calibrationBuffer.reduce((a, b) => a + b) /
+            _calibrationBuffer.length;
         _ema = _baseline; // Initialize EMA with baseline
       }
-      return 0.0; 
+      return 0.0;
     }
 
     // 2. Post-Calibration Phase: Apply EMA Smoothing
@@ -151,13 +154,13 @@ class FocusCalculator {
 
     // 5. Scale to 0-100
     if (_maxEi == _minEi) return 50.0; // Avoid division by zero
-    
+
     double focusIndex = 100 * ((eiNorm - _minEi) / (_maxEi - _minEi));
-    
+
     // Clip and return
     return max(0.0, min(100.0, focusIndex));
   }
-  
+
   // Resets the session
   void reset() {
     isCalibrating = true;

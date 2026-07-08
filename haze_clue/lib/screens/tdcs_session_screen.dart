@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'dart:math' as math;
 import '../widgets/glass_widgets.dart';
 import '../services/api_service.dart';
 
@@ -18,7 +17,8 @@ class TdcsSessionScreen extends StatefulWidget {
   State<TdcsSessionScreen> createState() => _TdcsSessionScreenState();
 }
 
-class _TdcsSessionScreenState extends State<TdcsSessionScreen> with TickerProviderStateMixin {
+class _TdcsSessionScreenState extends State<TdcsSessionScreen>
+    with TickerProviderStateMixin {
   late double _currentIntensity;
   late int _remainingSeconds;
   Timer? _timer;
@@ -74,7 +74,7 @@ class _TdcsSessionScreenState extends State<TdcsSessionScreen> with TickerProvid
       _isPlaying = true;
     });
     _pulseController.repeat(reverse: true);
-    
+
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         if (_remainingSeconds > 0) {
@@ -108,7 +108,8 @@ class _TdcsSessionScreenState extends State<TdcsSessionScreen> with TickerProvid
     setState(() {
       _isFinished = true;
       _remainingSeconds = 0;
-      _statusIndex = 0; // Or set to a specific "Cooling down" message if we had one
+      _statusIndex =
+          0; // Or set to a specific "Cooling down" message if we had one
     });
 
     try {
@@ -122,7 +123,8 @@ class _TdcsSessionScreenState extends State<TdcsSessionScreen> with TickerProvid
       if (sessionId != null) {
         await ApiService.completeSession(
           sessionId,
-          (_currentIntensity * 100).toInt(), // Use intensity as a proxy for concentration/score for now
+          (_currentIntensity * 100)
+              .toInt(), // Use intensity as a proxy for concentration/score for now
           widget.durationMinutes * 60,
         );
       }
@@ -141,19 +143,31 @@ class _TdcsSessionScreenState extends State<TdcsSessionScreen> with TickerProvid
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E2A),
-        title: const Text("Stop Session", style: TextStyle(color: Colors.white)),
-        content: const Text("Are you sure you want to stop the Simulation stimulation early?", style: TextStyle(color: Colors.white70)),
+        title: const Text(
+          "Stop Session",
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          "Are you sure you want to stop the Simulation stimulation early?",
+          style: TextStyle(color: Colors.white70),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text("Cancel", style: TextStyle(color: Colors.white54)),
+            child: const Text(
+              "Cancel",
+              style: TextStyle(color: Colors.white54),
+            ),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               _finishSession();
             },
-            child: const Text("Stop", style: TextStyle(color: Colors.redAccent)),
+            child: const Text(
+              "Stop",
+              style: TextStyle(color: Colors.redAccent),
+            ),
           ),
         ],
       ),
@@ -210,7 +224,9 @@ class _TdcsSessionScreenState extends State<TdcsSessionScreen> with TickerProvid
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF8B5CF6).withOpacity(0.3 * _currentIntensity),
+                                  color: const Color(
+                                    0xFF8B5CF6,
+                                  ).withOpacity(0.3 * _currentIntensity),
                                   blurRadius: 50 * _pulseAnimation.value,
                                   spreadRadius: 20 * _pulseAnimation.value,
                                 ),
@@ -222,7 +238,9 @@ class _TdcsSessionScreenState extends State<TdcsSessionScreen> with TickerProvid
                                 Icon(
                                   Icons.psychology,
                                   size: 120,
-                                  color: const Color(0xFF8B5CF6).withOpacity(0.8 + (0.2 * _currentIntensity)),
+                                  color: const Color(0xFF8B5CF6).withOpacity(
+                                    0.8 + (0.2 * _currentIntensity),
+                                  ),
                                 ),
                                 if (!_isPlaying && !_isFinished)
                                   Container(
@@ -233,16 +251,20 @@ class _TdcsSessionScreenState extends State<TdcsSessionScreen> with TickerProvid
                                       color: Colors.black.withOpacity(0.3),
                                     ),
                                     child: const Center(
-                                      child: Icon(Icons.pause, size: 60, color: Colors.white),
+                                      child: Icon(
+                                        Icons.pause,
+                                        size: 60,
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                  )
+                                  ),
                               ],
                             ),
                           );
                         },
                       ),
                       const SizedBox(height: 40),
-                      
+
                       // Timer
                       Text(
                         _formatTime(_remainingSeconds),
@@ -253,17 +275,25 @@ class _TdcsSessionScreenState extends State<TdcsSessionScreen> with TickerProvid
                           fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Status Text
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 500),
                         child: Text(
-                          _isFinished 
-                              ? "Session Completed" 
-                              : (_isPlaying ? _statusMessages[_statusIndex] : "Session Paused"),
-                          key: ValueKey<String>(_isFinished ? "done" : (_isPlaying ? _statusMessages[_statusIndex] : "paused")),
+                          _isFinished
+                              ? "Session Completed"
+                              : (_isPlaying
+                                    ? _statusMessages[_statusIndex]
+                                    : "Session Paused"),
+                          key: ValueKey<String>(
+                            _isFinished
+                                ? "done"
+                                : (_isPlaying
+                                      ? _statusMessages[_statusIndex]
+                                      : "paused"),
+                          ),
                           style: TextStyle(
                             fontSize: 16,
                             color: const Color(0xFF8B5CF6),
@@ -281,17 +311,25 @@ class _TdcsSessionScreenState extends State<TdcsSessionScreen> with TickerProvid
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
                   color: textColor.withOpacity(0.05),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(40),
+                  ),
                 ),
                 child: Column(
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Intensity", style: TextStyle(color: textColor.withOpacity(0.7))),
+                        Text(
+                          "Intensity",
+                          style: TextStyle(color: textColor.withOpacity(0.7)),
+                        ),
                         Text(
                           "${(_currentIntensity * 100).toInt()}%",
-                          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: textColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
@@ -305,12 +343,14 @@ class _TdcsSessionScreenState extends State<TdcsSessionScreen> with TickerProvid
                       ),
                       child: Slider(
                         value: _currentIntensity,
-                        onChanged: _isFinished ? null : (val) {
-                          setState(() {
-                            _currentIntensity = val;
-                            _updatePulseSpeed();
-                          });
-                        },
+                        onChanged: _isFinished
+                            ? null
+                            : (val) {
+                                setState(() {
+                                  _currentIntensity = val;
+                                  _updatePulseSpeed();
+                                });
+                              },
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -323,22 +363,28 @@ class _TdcsSessionScreenState extends State<TdcsSessionScreen> with TickerProvid
                           onTap: _isFinished ? null : _stopSessionEarly,
                         ),
                         _buildControlButton(
-                          icon: _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                          icon: _isPlaying
+                              ? Icons.pause_rounded
+                              : Icons.play_arrow_rounded,
                           color: const Color(0xFF8B5CF6),
                           size: 72,
                           iconSize: 40,
-                          onTap: _isFinished ? null : () {
-                            if (_isPlaying) {
-                              _pauseSession();
-                            } else {
-                              _startSession();
-                            }
-                          },
+                          onTap: _isFinished
+                              ? null
+                              : () {
+                                  if (_isPlaying) {
+                                    _pauseSession();
+                                  } else {
+                                    _startSession();
+                                  }
+                                },
                         ),
                         _buildControlButton(
                           icon: Icons.check_rounded,
                           color: Colors.greenAccent,
-                          onTap: _isFinished ? () => Navigator.pop(context) : null,
+                          onTap: _isFinished
+                              ? () => Navigator.pop(context)
+                              : null,
                         ),
                       ],
                     ),

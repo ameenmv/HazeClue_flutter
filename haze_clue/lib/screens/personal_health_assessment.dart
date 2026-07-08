@@ -17,7 +17,8 @@ class PersonalHealthAssessment extends StatefulWidget {
   const PersonalHealthAssessment({super.key});
 
   @override
-  State<PersonalHealthAssessment> createState() => _PersonalHealthAssessmentState();
+  State<PersonalHealthAssessment> createState() =>
+      _PersonalHealthAssessmentState();
 }
 
 class _PersonalHealthAssessmentState extends State<PersonalHealthAssessment> {
@@ -41,8 +42,12 @@ class _PersonalHealthAssessmentState extends State<PersonalHealthAssessment> {
       setState(() => _isSubmitting = true);
       try {
         final payload = {
-          'multiSelections': _multiSelections.map((key, value) => MapEntry(key.toString(), value)),
-          'singleSelections': _singleSelections.map((key, value) => MapEntry(key.toString(), value)),
+          'multiSelections': _multiSelections.map(
+            (key, value) => MapEntry(key.toString(), value),
+          ),
+          'singleSelections': _singleSelections.map(
+            (key, value) => MapEntry(key.toString(), value),
+          ),
           'age': _selectedAge,
         };
         await ApiService.submitHealthAssessment(payload);
@@ -94,7 +99,9 @@ class _PersonalHealthAssessmentState extends State<PersonalHealthAssessment> {
                         child: LinearProgressIndicator(
                           value: _currentStep / _totalSteps,
                           backgroundColor: Colors.white.withOpacity(0.1),
-                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            Color(0xFF8B5CF6),
+                          ),
                           minHeight: 8,
                         ),
                       ),
@@ -103,7 +110,10 @@ class _PersonalHealthAssessmentState extends State<PersonalHealthAssessment> {
                         alignment: Alignment.centerRight,
                         child: Text(
                           "$_currentStep / $_totalSteps",
-                          style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.7)),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withOpacity(0.7),
+                          ),
                         ),
                       ),
                     ],
@@ -113,7 +123,8 @@ class _PersonalHealthAssessmentState extends State<PersonalHealthAssessment> {
                   child: PageView(
                     controller: _pageController,
                     physics: const NeverScrollableScrollPhysics(),
-                    onPageChanged: (index) => setState(() => _currentStep = index + 1),
+                    onPageChanged: (index) =>
+                        setState(() => _currentStep = index + 1),
                     children: [
                       _buildStep1(),
                       _buildStep2(),
@@ -127,14 +138,17 @@ class _PersonalHealthAssessmentState extends State<PersonalHealthAssessment> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(24.0),
-                  child: _isSubmitting 
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : GlassButton(
-                        text: _currentStep == _totalSteps ? "FINISH" : "NEXT",
-                        onPressed: _isPageValid()
-                            ? _nextStep
-                            : () => showGlassToast(context, "Please complete all fields before continuing"),
-                      ),
+                  child: _isSubmitting
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : GlassButton(
+                          text: _currentStep == _totalSteps ? "FINISH" : "NEXT",
+                          onPressed: _isPageValid()
+                              ? _nextStep
+                              : () => showGlassToast(
+                                  context,
+                                  "Please complete all fields before continuing",
+                                ),
+                        ),
                 ),
               ],
             ),
@@ -224,15 +238,21 @@ class _PersonalHealthAssessmentState extends State<PersonalHealthAssessment> {
                       border: Border.all(color: Colors.white.withOpacity(0.15)),
                     ),
                     child: DropdownButtonFormField<int>(
-                      value: _selectedAge,
+                      initialValue: _selectedAge,
                       isDense: true,
                       menuMaxHeight: 250,
                       hint: Text(
                         "Select age",
-                        style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14),
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.4),
+                          fontSize: 14,
+                        ),
                       ),
                       decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -249,7 +269,8 @@ class _PersonalHealthAssessmentState extends State<PersonalHealthAssessment> {
                             ),
                           )
                           .toList(),
-                      onChanged: (value) => setState(() => _selectedAge = value),
+                      onChanged: (value) =>
+                          setState(() => _selectedAge = value),
                       icon: Icon(
                         Icons.keyboard_arrow_down,
                         color: Colors.white.withOpacity(0.7),
@@ -351,7 +372,8 @@ class _PersonalHealthAssessmentState extends State<PersonalHealthAssessment> {
                     onTap: () => setState(() {
                       if (isMultiselect) {
                         _multiSelections.putIfAbsent(stepId, () => []);
-                        if (index == 7 && stepId == 1) { // Specifically for "None of the above"
+                        if (index == 7 && stepId == 1) {
+                          // Specifically for "None of the above"
                           _multiSelections[stepId] = [7];
                         } else {
                           if (stepId == 1) _multiSelections[stepId]!.remove(7);
@@ -366,12 +388,19 @@ class _PersonalHealthAssessmentState extends State<PersonalHealthAssessment> {
                     borderRadius: BorderRadius.circular(12),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12.0,
+                        horizontal: 12.0,
+                      ),
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.white.withOpacity(0.15) : Colors.transparent,
+                        color: isSelected
+                            ? Colors.white.withOpacity(0.15)
+                            : Colors.transparent,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isSelected ? const Color(0xFF8B5CF6) : Colors.transparent,
+                          color: isSelected
+                              ? const Color(0xFF8B5CF6)
+                              : Colors.transparent,
                           width: 1,
                         ),
                       ),
@@ -379,9 +408,15 @@ class _PersonalHealthAssessmentState extends State<PersonalHealthAssessment> {
                         children: [
                           Icon(
                             isMultiselect
-                                ? (isSelected ? Icons.check_box : Icons.check_box_outline_blank)
-                                : (isSelected ? Icons.radio_button_checked : Icons.radio_button_off),
-                            color: isSelected ? const Color(0xFF8B5CF6) : Colors.white.withOpacity(0.5),
+                                ? (isSelected
+                                      ? Icons.check_box
+                                      : Icons.check_box_outline_blank)
+                                : (isSelected
+                                      ? Icons.radio_button_checked
+                                      : Icons.radio_button_off),
+                            color: isSelected
+                                ? const Color(0xFF8B5CF6)
+                                : Colors.white.withOpacity(0.5),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -389,8 +424,12 @@ class _PersonalHealthAssessmentState extends State<PersonalHealthAssessment> {
                               options[index],
                               style: TextStyle(
                                 fontSize: 15,
-                                color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
-                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                color: isSelected
+                                    ? Colors.white
+                                    : Colors.white.withOpacity(0.7),
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
                               ),
                             ),
                           ),
@@ -412,7 +451,8 @@ class _PersonalHealthAssessmentState extends State<PersonalHealthAssessment> {
       case 1:
         return _multiSelections[1]?.isNotEmpty ?? false;
       case 2:
-        return (_multiSelections[2]?.isNotEmpty ?? false) && (_singleSelections[3] != null);
+        return (_multiSelections[2]?.isNotEmpty ?? false) &&
+            (_singleSelections[3] != null);
       case 3:
         return (_singleSelections[4] != null) && (_singleSelections[5] != null);
       case 4:
@@ -420,9 +460,11 @@ class _PersonalHealthAssessmentState extends State<PersonalHealthAssessment> {
       case 5:
         return (_singleSelections[7] != null) && (_singleSelections[8] != null);
       case 6:
-        return (_singleSelections[9] != null) && (_singleSelections[10] != null);
+        return (_singleSelections[9] != null) &&
+            (_singleSelections[10] != null);
       case 7:
-        return (_singleSelections[11] != null) && (_singleSelections[12] != null);
+        return (_singleSelections[11] != null) &&
+            (_singleSelections[12] != null);
       default:
         return false;
     }

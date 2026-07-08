@@ -55,13 +55,27 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     // Optimistic update
     setState(() {
       switch (key) {
-        case 'generalNotification': _generalNotification = value; break;
-        case 'sound': _sound = value; break;
-        case 'vibrate': _vibrate = value; break;
-        case 'appUpdates': _appUpdates = value; break;
-        case 'serviceAlerts': _otherUpdates = value; break;
-        case 'newServiceAvailable': _newServiceAvailable = value; break;
-        case 'newTipsAvailable': _newTipsAvailable = value; break;
+        case 'generalNotification':
+          _generalNotification = value;
+          break;
+        case 'sound':
+          _sound = value;
+          break;
+        case 'vibrate':
+          _vibrate = value;
+          break;
+        case 'appUpdates':
+          _appUpdates = value;
+          break;
+        case 'serviceAlerts':
+          _otherUpdates = value;
+          break;
+        case 'newServiceAvailable':
+          _newServiceAvailable = value;
+          break;
+        case 'newTipsAvailable':
+          _newTipsAvailable = value;
+          break;
       }
     });
 
@@ -80,13 +94,27 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       // Revert on failure
       setState(() {
         switch (key) {
-          case 'generalNotification': _generalNotification = !value; break;
-          case 'sound': _sound = !value; break;
-          case 'vibrate': _vibrate = !value; break;
-          case 'appUpdates': _appUpdates = !value; break;
-          case 'serviceAlerts': _otherUpdates = !value; break;
-          case 'newServiceAvailable': _newServiceAvailable = !value; break;
-          case 'newTipsAvailable': _newTipsAvailable = !value; break;
+          case 'generalNotification':
+            _generalNotification = !value;
+            break;
+          case 'sound':
+            _sound = !value;
+            break;
+          case 'vibrate':
+            _vibrate = !value;
+            break;
+          case 'appUpdates':
+            _appUpdates = !value;
+            break;
+          case 'serviceAlerts':
+            _otherUpdates = !value;
+            break;
+          case 'newServiceAvailable':
+            _newServiceAvailable = !value;
+            break;
+          case 'newTipsAvailable':
+            _newTipsAvailable = !value;
+            break;
         }
       });
       if (mounted) showGlassToast(context, e.toString());
@@ -121,7 +149,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           child: _isLoading
               ? Center(child: CircularProgressIndicator(color: textColor))
               : SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0,
+                    vertical: 16.0,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -144,21 +175,24 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 title: "General Notification",
                                 value: _generalNotification,
                                 textColor: textColor,
-                                onChanged: (val) => _updateSetting('generalNotification', val),
+                                onChanged: (val) =>
+                                    _updateSetting('generalNotification', val),
                               ),
                               _buildDivider(textColor),
                               _buildSwitchTile(
                                 title: "Sound",
                                 value: _sound,
                                 textColor: textColor,
-                                onChanged: (val) => _updateSetting('sound', val),
+                                onChanged: (val) =>
+                                    _updateSetting('sound', val),
                               ),
                               _buildDivider(textColor),
                               _buildSwitchTile(
                                 title: "Vibrate",
                                 value: _vibrate,
                                 textColor: textColor,
-                                onChanged: (val) => _updateSetting('vibrate', val),
+                                onChanged: (val) =>
+                                    _updateSetting('vibrate', val),
                               ),
                             ],
                           ),
@@ -185,14 +219,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 title: "App updates",
                                 value: _appUpdates,
                                 textColor: textColor,
-                                onChanged: (val) => _updateSetting('appUpdates', val),
+                                onChanged: (val) =>
+                                    _updateSetting('appUpdates', val),
                               ),
                               _buildDivider(textColor),
                               _buildSwitchTile(
                                 title: "Service alerts",
                                 value: _otherUpdates,
                                 textColor: textColor,
-                                onChanged: (val) => _updateSetting('serviceAlerts', val),
+                                onChanged: (val) =>
+                                    _updateSetting('serviceAlerts', val),
                               ),
                             ],
                           ),
@@ -219,14 +255,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 title: "New Service Available",
                                 value: _newServiceAvailable,
                                 textColor: textColor,
-                                onChanged: (val) => _updateSetting('newServiceAvailable', val),
+                                onChanged: (val) =>
+                                    _updateSetting('newServiceAvailable', val),
                               ),
                               _buildDivider(textColor),
                               _buildSwitchTile(
                                 title: "New Tips Available",
                                 value: _newTipsAvailable,
                                 textColor: textColor,
-                                onChanged: (val) => _updateSetting('newTipsAvailable', val),
+                                onChanged: (val) =>
+                                    _updateSetting('newTipsAvailable', val),
                               ),
                             ],
                           ),
@@ -263,9 +301,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
           CupertinoSwitch(
             value: value,
-            activeColor: const Color(0xFF8B5CF6),
+            activeTrackColor: const Color(0xFF8B5CF6),
             thumbColor: textColor,
-            trackColor: textColor.withOpacity(0.2),
+            inactiveTrackColor: textColor.withOpacity(0.2),
             onChanged: onChanged,
           ),
         ],
@@ -274,10 +312,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _buildDivider(Color textColor) {
-    return Divider(
-      height: 24,
-      thickness: 1,
-      color: textColor.withOpacity(0.1),
-    );
+    return Divider(height: 24, thickness: 1, color: textColor.withOpacity(0.1));
   }
 }

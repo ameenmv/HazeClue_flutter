@@ -10,10 +10,14 @@ const Color kInputBg = Color(0xFFF5F5F7);
 const Color kSuccessGreen = Color(0xFF00A86B);
 
 // Shared Preferences Provider
-final sharedPrefsProvider = Provider<SharedPreferences>((ref) => throw UnimplementedError());
+final sharedPrefsProvider = Provider<SharedPreferences>(
+  (ref) => throw UnimplementedError(),
+);
 
 // Global Theme Provider
-final themeProvider = NotifierProvider<ThemeNotifier, ThemeMode>(ThemeNotifier.new);
+final themeProvider = NotifierProvider<ThemeNotifier, ThemeMode>(
+  ThemeNotifier.new,
+);
 
 class ThemeNotifier extends Notifier<ThemeMode> {
   @override
@@ -30,15 +34,13 @@ class ThemeNotifier extends Notifier<ThemeMode> {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Load saved theme preference
   final prefs = await SharedPreferences.getInstance();
 
   runApp(
     ProviderScope(
-      overrides: [
-        sharedPrefsProvider.overrideWithValue(prefs),
-      ],
+      overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
       child: const MyApp(),
     ),
   );
@@ -56,14 +58,15 @@ class MyApp extends ConsumerWidget {
       themeMode: currentMode,
       // --- Light Theme ---
       theme: ThemeData.light().copyWith(
-        scaffoldBackgroundColor: const Color(0xFFF0F4F8), // Very light cool grey/blue
+        scaffoldBackgroundColor: const Color(
+          0xFFF0F4F8,
+        ), // Very light cool grey/blue
         primaryColor: kPrimaryPurple,
         colorScheme: const ColorScheme.light(
           primary: kPrimaryPurple,
           secondary: Color(0xFF4F46E5), // Indigo
           surface: Colors.white,
-          onSurface: Color(0xFF1A1A2E), // Dark text
-          background: Color(0xFFF0F4F8),
+          onSurface: Color(0xFF1A1A2E),
         ),
         iconTheme: const IconThemeData(color: Color(0xFF1A1A2E)),
         textTheme: ThemeData.light().textTheme.apply(
@@ -80,7 +83,6 @@ class MyApp extends ConsumerWidget {
           secondary: Color(0xFF9333EA), // Purple
           surface: Color(0xFF1E1E2A),
           onSurface: Colors.white,
-          background: Color(0xFF0F172A),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
         textTheme: ThemeData.dark().textTheme.apply(

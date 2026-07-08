@@ -1,8 +1,6 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../main.dart'; // Keeping for global keys/theme if needed
+// Keeping for global keys/theme if needed
 import '../widgets/glass_widgets.dart';
-import '../widgets/shared_widgets.dart' show SocialButton;
 import 'sign_up_screen.dart';
 import 'forgot_password_screen.dart';
 import 'survey_intro_screen.dart';
@@ -16,13 +14,14 @@ class SignInScreen extends StatefulWidget {
   State<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderStateMixin {
+class _SignInScreenState extends State<SignInScreen>
+    with SingleTickerProviderStateMixin {
   bool _isRememberMeChecked = false;
   bool _isLoading = false;
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   String? _emailError;
   String? _passwordError;
 
@@ -46,15 +45,21 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
       setState(() => _passwordError = null);
     }
   }
-  
+
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
-    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOutCubic);
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOutCubic,
+    );
     _fadeController.forward();
   }
 
@@ -68,8 +73,12 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
 
   Future<void> _handleSignIn() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      if (_emailController.text.isEmpty) setState(() => _emailError = 'Email cannot be empty');
-      if (_passwordController.text.isEmpty) setState(() => _passwordError = 'Password cannot be empty');
+      if (_emailController.text.isEmpty) {
+        setState(() => _emailError = 'Email cannot be empty');
+      }
+      if (_passwordController.text.isEmpty) {
+        setState(() => _passwordError = 'Password cannot be empty');
+      }
       return;
     }
 
@@ -83,11 +92,11 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
-      
+
       final profile = await ApiService.getProfile();
-      
+
       if (!mounted) return;
-      
+
       if (profile['onboardingCompleted'] == true) {
         Navigator.pushReplacement(
           context,
@@ -118,11 +127,17 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 20.0,
+              ),
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: SlideTransition(
-                  position: Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(_fadeAnimation),
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0.1),
+                    end: Offset.zero,
+                  ).animate(_fadeAnimation),
                   child: GlassCard(
                     child: Padding(
                       padding: const EdgeInsets.all(32.0),
@@ -134,16 +149,22 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: isLight ? Colors.white.withOpacity(0.5) : Colors.white.withOpacity(0.1),
+                              color: isLight
+                                  ? Colors.white.withOpacity(0.5)
+                                  : Colors.white.withOpacity(0.1),
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withOpacity(0.1),
                                   blurRadius: 20,
-                                )
-                              ]
+                                ),
+                              ],
                             ),
-                            child: Icon(Icons.psychology, size: 64, color: textColor),
+                            child: Icon(
+                              Icons.psychology,
+                              size: 64,
+                              color: textColor,
+                            ),
                           ),
                           const SizedBox(height: 24),
                           Text(
@@ -158,10 +179,13 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                           const SizedBox(height: 8),
                           Text(
                             "Log in to continue your journey",
-                            style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 14),
+                            style: TextStyle(
+                              color: textColor.withOpacity(0.7),
+                              fontSize: 14,
+                            ),
                           ),
                           const SizedBox(height: 40),
-                          
+
                           // Inputs
                           GlassTextField(
                             label: "Email",
@@ -182,7 +206,7 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                             onChanged: _validatePassword,
                           ),
                           const SizedBox(height: 20),
-                          
+
                           // Options
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -195,11 +219,16 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                                     child: Checkbox(
                                       value: _isRememberMeChecked,
                                       onChanged: (value) => setState(
-                                        () => _isRememberMeChecked = value ?? false,
+                                        () => _isRememberMeChecked =
+                                            value ?? false,
                                       ),
                                       activeColor: const Color(0xFF6366F1),
-                                      checkColor: Theme.of(context).colorScheme.surface,
-                                      side: BorderSide(color: textColor.withOpacity(0.5)),
+                                      checkColor: Theme.of(
+                                        context,
+                                      ).colorScheme.surface,
+                                      side: BorderSide(
+                                        color: textColor.withOpacity(0.5),
+                                      ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(4),
                                       ),
@@ -219,7 +248,8 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                                 onTap: () => Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const ForgotPasswordScreen(),
+                                    builder: (_) =>
+                                        const ForgotPasswordScreen(),
                                   ),
                                 ),
                                 child: const Text(
@@ -233,50 +263,84 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                             ],
                           ),
                           const SizedBox(height: 40),
-                          
+
                           // Sign In Button
                           _isLoading
                               ? CircularProgressIndicator(color: textColor)
-                              : GlassButton(text: "Sign In", onPressed: _handleSignIn),
-                          
+                              : GlassButton(
+                                  text: "Sign In",
+                                  onPressed: _handleSignIn,
+                                ),
+
                           const SizedBox(height: 30),
                           Row(
                             children: [
-                              Expanded(child: Divider(color: textColor.withOpacity(0.2))),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text("Or sign in with", style: TextStyle(color: textColor.withOpacity(0.5))),
+                              Expanded(
+                                child: Divider(
+                                  color: textColor.withOpacity(0.2),
+                                ),
                               ),
-                              Expanded(child: Divider(color: textColor.withOpacity(0.2))),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                child: Text(
+                                  "Or sign in with",
+                                  style: TextStyle(
+                                    color: textColor.withOpacity(0.5),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Divider(
+                                  color: textColor.withOpacity(0.2),
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 24),
-                          
+
                           // Social Icons
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              _buildGlassSocial(Icons.facebook, Colors.blueAccent, textColor),
+                              _buildGlassSocial(
+                                Icons.facebook,
+                                Colors.blueAccent,
+                                textColor,
+                              ),
                               const SizedBox(width: 20),
-                              _buildGlassSocial(Icons.g_mobiledata, Colors.redAccent, textColor),
+                              _buildGlassSocial(
+                                Icons.g_mobiledata,
+                                Colors.redAccent,
+                                textColor,
+                              ),
                               const SizedBox(width: 20),
-                              _buildGlassSocial(Icons.apple, textColor, textColor),
+                              _buildGlassSocial(
+                                Icons.apple,
+                                textColor,
+                                textColor,
+                              ),
                             ],
                           ),
                           const SizedBox(height: 40),
-                          
+
                           // Footer
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
                                 "Don't have an account? ",
-                                style: TextStyle(color: textColor.withOpacity(0.7)),
+                                style: TextStyle(
+                                  color: textColor.withOpacity(0.7),
+                                ),
                               ),
                               GestureDetector(
                                 onTap: () => Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (_) => const SignUpScreen()),
+                                  MaterialPageRoute(
+                                    builder: (_) => const SignUpScreen(),
+                                  ),
                                 ),
                                 child: const Text(
                                   "Sign up",

@@ -71,8 +71,16 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E2C),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text("Time's Up!", style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
-        content: Text("Your Focus Score is $_score\nAccuracy: ${(_accuracy * 100).toInt()}%", style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))),
+        title: Text(
+          "Time's Up!",
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+        ),
+        content: Text(
+          "Your Focus Score is $_score\nAccuracy: ${(_accuracy * 100).toInt()}%",
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () {
@@ -120,7 +128,6 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
   }
 
   double get _accuracy => _totalTaps == 0 ? 1.0 : _correctTaps / _totalTaps;
-
 
   @override
   Widget build(BuildContext context) {
@@ -196,7 +203,9 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                                 Text(
                                   "00:${_timeLeft.toString().padLeft(2, '0')}",
                                   style: TextStyle(
-                                    color: _timeLeft <= 5 ? Colors.redAccent : const Color(0xFF8B5CF6),
+                                    color: _timeLeft <= 5
+                                        ? Colors.redAccent
+                                        : const Color(0xFF8B5CF6),
                                     fontWeight: FontWeight.bold,
                                     fontSize: 28,
                                   ),
@@ -220,10 +229,12 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                               children: List.generate(9, (index) {
                                 return GestureDetector(
                                   onTap: () => _onGridTapped(index),
-                                  child: _buildGridItem("${index + 1}", 
-                                      isDark: index % 2 != 0, 
-                                      isActive: index == _activeTargetIndex,
-                                      textColor: textColor),
+                                  child: _buildGridItem(
+                                    "${index + 1}",
+                                    isDark: index % 2 != 0,
+                                    isActive: index == _activeTargetIndex,
+                                    textColor: textColor,
+                                  ),
                                 );
                               }),
                             ),
@@ -239,10 +250,12 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: const Color(0xFF8B5CF6).withOpacity(0.5),
+                                        color: const Color(
+                                          0xFF8B5CF6,
+                                        ).withOpacity(0.5),
                                         blurRadius: 8,
                                         spreadRadius: 2,
-                                      )
+                                      ),
                                     ],
                                   ),
                                   child: Icon(
@@ -268,7 +281,10 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                       children: [
                         Text(
                           "Current Combo",
-                          style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 14),
+                          style: TextStyle(
+                            color: textColor.withOpacity(0.7),
+                            fontSize: 14,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -290,7 +306,10 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                       children: [
                         Text(
                           "Accuracy",
-                          style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 14),
+                          style: TextStyle(
+                            color: textColor.withOpacity(0.7),
+                            fontSize: 14,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -310,7 +329,10 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                 // --- Binaural Beats Toggle ---
                 GlassCard(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
                     child: Row(
                       children: [
                         const Icon(Icons.headphones, color: Color(0xFF8B5CF6)),
@@ -327,9 +349,9 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                         ),
                         CupertinoSwitch(
                           value: _binauralBeatsEnabled,
-                          activeColor: const Color(0xFF8B5CF6),
+                          activeTrackColor: const Color(0xFF8B5CF6),
                           thumbColor: textColor,
-                          trackColor: textColor.withOpacity(0.2),
+                          inactiveTrackColor: textColor.withOpacity(0.2),
                           onChanged: (val) {
                             setState(() {
                               _binauralBeatsEnabled = val;
@@ -351,8 +373,11 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.lightbulb_outline,
-                                color: Color(0xFF8B5CF6), size: 20),
+                            const Icon(
+                              Icons.lightbulb_outline,
+                              color: Color(0xFF8B5CF6),
+                              size: 20,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               "AI Tips",
@@ -378,7 +403,7 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                
+
                 // --- Play Button ---
                 if (!_isPlaying)
                   GlassButton(
@@ -394,10 +419,18 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
     );
   }
 
-  Widget _buildGridItem(String number, {required bool isDark, required bool isActive, required Color textColor}) {
-    Color bgColor = isActive 
-        ? Colors.orangeAccent // Active target color
-        : (isDark ? const Color(0xFF8B5CF6).withOpacity(0.5) : const Color(0xFF8B5CF6).withOpacity(0.8));
+  Widget _buildGridItem(
+    String number, {
+    required bool isDark,
+    required bool isActive,
+    required Color textColor,
+  }) {
+    Color bgColor = isActive
+        ? Colors
+              .orangeAccent // Active target color
+        : (isDark
+              ? const Color(0xFF8B5CF6).withOpacity(0.5)
+              : const Color(0xFF8B5CF6).withOpacity(0.8));
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -405,13 +438,15 @@ class _ConcentrationPuzzleScreenState extends State<ConcentrationPuzzleScreen> {
         color: bgColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: textColor.withOpacity(isActive ? 0.8 : 0.2)),
-        boxShadow: isActive ? [
-          BoxShadow(
-            color: Colors.orangeAccent.withOpacity(0.5),
-            blurRadius: 8,
-            spreadRadius: 2,
-          ),
-        ] : [],
+        boxShadow: isActive
+            ? [
+                BoxShadow(
+                  color: Colors.orangeAccent.withOpacity(0.5),
+                  blurRadius: 8,
+                  spreadRadius: 2,
+                ),
+              ]
+            : [],
       ),
       alignment: Alignment.center,
       child: Text(

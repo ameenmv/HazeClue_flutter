@@ -49,7 +49,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Scaffold(
-      backgroundColor: Colors.transparent, // Let AnimatedBackground show through
+      backgroundColor:
+          Colors.transparent, // Let AnimatedBackground show through
       body: SingleChildScrollView(
         child: Stack(
           alignment: Alignment.topCenter,
@@ -57,7 +58,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             // --- Top App Bar Icons ---
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -66,9 +70,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          GlassPageRoute(
-                            page: const NotificationInboxScreen(),
-                          ),
+                          GlassPageRoute(page: const NotificationInboxScreen()),
                         );
                       },
                     ),
@@ -102,18 +104,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: textColor.withOpacity(0.3), width: 2),
+                        border: Border.all(
+                          color: textColor.withOpacity(0.3),
+                          width: 2,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: const Color(0xFF8B5CF6).withOpacity(0.3),
                             blurRadius: 20,
                             spreadRadius: 2,
-                          )
+                          ),
                         ],
                       ),
                       child: const CircleAvatar(
                         radius: 55,
-                        backgroundImage: AssetImage('assets/images/Intro.png'), // Placeholder
+                        backgroundImage: AssetImage(
+                          'assets/images/Intro.png',
+                        ), // Placeholder
                         backgroundColor: Colors.transparent,
                       ),
                     ),
@@ -122,9 +129,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       onTap: () async {
                         await Navigator.push(
                           context,
-                          GlassPageRoute(
-                            page: const EditProfileScreen(),
-                          ),
+                          GlassPageRoute(page: const EditProfileScreen()),
                         );
                         _loadProfile(); // Refresh profile after editing
                       },
@@ -133,7 +138,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         decoration: BoxDecoration(
                           color: const Color(0xFF8B5CF6),
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFF1E1E2A), width: 2),
+                          border: Border.all(
+                            color: const Color(0xFF1E1E2A),
+                            width: 2,
+                          ),
                         ),
                         child: Icon(
                           Icons.edit_outlined,
@@ -181,9 +189,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           onTap: () async {
                             await Navigator.push(
                               context,
-                              GlassPageRoute(
-                                page: const EditProfileScreen(),
-                              ),
+                              GlassPageRoute(page: const EditProfileScreen()),
                             );
                             _loadProfile(); // Refresh profile after editing
                           },
@@ -197,9 +203,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              GlassPageRoute(
-                                page: const NotificationsScreen(),
-                              ),
+                              GlassPageRoute(page: const NotificationsScreen()),
                             );
                           },
                         ),
@@ -227,13 +231,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           title: "Dark Mode",
                           trailingWidget: CupertinoSwitch(
                             value: !isLight,
-                            activeColor: const Color(0xFF8B5CF6),
+                            activeTrackColor: const Color(0xFF8B5CF6),
                             thumbColor: textColor,
-                            trackColor: textColor.withOpacity(0.2),
+                            inactiveTrackColor: textColor.withOpacity(0.2),
                             onChanged: (val) async {
-                              final prefs = await SharedPreferences.getInstance();
+                              final prefs =
+                                  await SharedPreferences.getInstance();
                               await prefs.setBool('isLightMode', !val);
-                              ref.read(themeProvider.notifier).setMode(!val ? ThemeMode.light : ThemeMode.dark);
+                              ref
+                                  .read(themeProvider.notifier)
+                                  .setMode(
+                                    !val ? ThemeMode.light : ThemeMode.dark,
+                                  );
                             },
                           ),
                           textColor: textColor,
@@ -251,9 +260,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              GlassPageRoute(
-                                page: const HelpSupportScreen(),
-                              ),
+                              GlassPageRoute(page: const HelpSupportScreen()),
                             );
                           },
                         ),
@@ -265,9 +272,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              GlassPageRoute(
-                                page: const ContactUsScreen(),
-                              ),
+                              GlassPageRoute(page: const ContactUsScreen()),
                             );
                           },
                         ),
@@ -279,15 +284,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              GlassPageRoute(
-                                page: const PrivacyPolicyScreen(),
-                              ),
+                              GlassPageRoute(page: const PrivacyPolicyScreen()),
                             );
                           },
                         ),
                       ]),
                       const SizedBox(height: 32),
-                      
+
                       // --- Logout Button ---
                       GlassButton(
                         text: "Logout",
@@ -315,11 +318,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildMenuGroup(List<Widget> children) {
-    return GlassCard(
-      child: Column(
-        children: children,
-      ),
-    );
+    return GlassCard(child: Column(children: children));
   }
 
   Widget _buildDivider(Color textColor) {
@@ -378,7 +377,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
               )
             else
-              Icon(Icons.arrow_forward_ios, size: 14, color: textColor.withOpacity(0.4)),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 14,
+                color: textColor.withOpacity(0.4),
+              ),
           ],
         ),
       ),

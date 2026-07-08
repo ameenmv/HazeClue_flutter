@@ -97,7 +97,6 @@ class ApiService {
     await deleteToken();
   }
 
-
   static Future<void> requestPasswordReset(String email) async {
     final res = await http.post(
       Uri.parse('$baseUrl/account/forgot-password'),
@@ -112,7 +111,7 @@ class ApiService {
   static void _throwBackendError(String body, String defaultMsg) {
     try {
       final data = jsonDecode(body);
-      
+
       // Handle FluentValidation RFC 7807 problem details format
       if (data['errors'] != null && data['errors'] is Map) {
         final errors = data['errors'] as Map;
@@ -123,14 +122,18 @@ class ApiService {
           }
         }
       }
-      
-      if (data['title'] != null && data['errors'] == null && data['message'] == null) {
+
+      if (data['title'] != null &&
+          data['errors'] == null &&
+          data['message'] == null) {
         throw Exception(data['title']);
       }
-      
+
       throw Exception(data['message'] ?? defaultMsg);
     } catch (e) {
-      if (e.toString().contains('Exception:')) throw e; // rethrow already parsed exception
+      if (e.toString().contains('Exception:')) {
+        rethrow; // rethrow already parsed exception
+      }
       throw Exception(defaultMsg);
     }
   }
@@ -196,14 +199,18 @@ class ApiService {
     throw Exception('Failed to get notification settings');
   }
 
-  static Future<void> updateNotificationSettings(Map<String, dynamic> settings) async {
+  static Future<void> updateNotificationSettings(
+    Map<String, dynamic> settings,
+  ) async {
     final headers = await _authHeaders();
     final res = await http.put(
       Uri.parse('$baseUrl/users/me/notification-settings'),
       headers: headers,
       body: jsonEncode(settings),
     );
-    if (res.statusCode != 200) throw Exception('Failed to update notification settings');
+    if (res.statusCode != 200) {
+      throw Exception('Failed to update notification settings');
+    }
   }
 
   static Future<Map<String, dynamic>> getDeviceSettings() async {
@@ -223,7 +230,9 @@ class ApiService {
       headers: headers,
       body: jsonEncode({'intensityLevel': intensityLevel}),
     );
-    if (res.statusCode != 200) throw Exception('Failed to update device settings');
+    if (res.statusCode != 200) {
+      throw Exception('Failed to update device settings');
+    }
   }
 
   static Future<List<dynamic>> getActiveSessions() async {
@@ -251,7 +260,9 @@ class ApiService {
       Uri.parse('$baseUrl/account/sessions/other'),
       headers: headers,
     );
-    if (res.statusCode != 200) throw Exception('Failed to revoke other sessions');
+    if (res.statusCode != 200) {
+      throw Exception('Failed to revoke other sessions');
+    }
   }
 
   static Future<List<dynamic>> getSecurityLogs() async {
@@ -361,17 +372,15 @@ class ApiService {
       headers: headers,
       body: jsonEncode({
         'fullName': fullName,
-        if (nickname != null) 'nickname': nickname,
-        if (phoneNumber != null) 'phoneNumber': phoneNumber,
-        if (country != null) 'country': country,
-        if (address != null) 'address': address,
+        'nickname': ?nickname,
+        'phoneNumber': ?phoneNumber,
+        'country': ?country,
+        'address': ?address,
       }),
     );
     if (res.statusCode == 200) return jsonDecode(res.body);
     throw Exception('Failed to update profile: ${res.body}');
   }
-
-
 
   static Future<List<dynamic>> getDevices() async {
     final headers = await _authHeaders();
@@ -380,7 +389,10 @@ class ApiService {
     throw Exception('Failed to get devices');
   }
 
-  static Future<Map<String, dynamic>> addDevice(String name, String macAddress) async {
+  static Future<Map<String, dynamic>> addDevice(
+    String name,
+    String macAddress,
+  ) async {
     final headers = await _authHeaders();
     final res = await http.post(
       Uri.parse('$baseUrl/devices'),
@@ -394,11 +406,18 @@ class ApiService {
 
   static Future<void> deleteDevice(String id) async {
     final headers = await _authHeaders();
-    final res = await http.delete(Uri.parse('$baseUrl/devices/$id'), headers: headers);
+    final res = await http.delete(
+      Uri.parse('$baseUrl/devices/$id'),
+      headers: headers,
+    );
     if (res.statusCode != 200) throw Exception('Failed to delete device');
   }
 
-  static Future<Map<String, dynamic>> createSession(String title, int durationMinutes, String? deviceId) async {
+  static Future<Map<String, dynamic>> createSession(
+    String title,
+    int durationMinutes,
+    String? deviceId,
+  ) async {
     final headers = await _authHeaders();
     final res = await http.post(
       Uri.parse('$baseUrl/sessions'),
@@ -406,14 +425,18 @@ class ApiService {
       body: jsonEncode({
         'title': title,
         'durationMinutes': durationMinutes,
-        'deviceId': deviceId
+        'deviceId': deviceId,
       }),
     );
     if (res.statusCode == 200) return jsonDecode(res.body);
     throw Exception('Failed to create session');
   }
 
-  static Future<void> completeSession(String id, int averageConcentration, int actualDurationSeconds) async {
+  static Future<void> completeSession(
+    String id,
+    int averageConcentration,
+    int actualDurationSeconds,
+  ) async {
     final headers = await _authHeaders();
     final res = await http.post(
       Uri.parse('$baseUrl/sessions/$id/complete'),
@@ -428,17 +451,27 @@ class ApiService {
 
   static Future<void> pauseSession(String id) async {
     final headers = await _authHeaders();
-    final res = await http.post(Uri.parse('$baseUrl/sessions/$id/pause'), headers: headers);
+    final res = await http.post(
+      Uri.parse('$baseUrl/sessions/$id/pause'),
+      headers: headers,
+    );
     if (res.statusCode != 200) throw Exception('Failed to pause session');
   }
 
   static Future<void> resumeSession(String id) async {
     final headers = await _authHeaders();
-    final res = await http.post(Uri.parse('$baseUrl/sessions/$id/resume'), headers: headers);
+    final res = await http.post(
+      Uri.parse('$baseUrl/sessions/$id/resume'),
+      headers: headers,
+    );
     if (res.statusCode != 200) throw Exception('Failed to resume session');
   }
 
-  static Future<void> submitSessionScore(String id, int score, int timeSeconds) async {
+  static Future<void> submitSessionScore(
+    String id,
+    int score,
+    int timeSeconds,
+  ) async {
     final headers = await _authHeaders();
     final res = await http.post(
       Uri.parse('$baseUrl/sessions/$id/score'),
@@ -450,15 +483,24 @@ class ApiService {
 
   static Future<void> markNotificationRead(String id) async {
     final headers = await _authHeaders();
-    await http.patch(Uri.parse('$baseUrl/notifications/$id/read'), headers: headers);
+    await http.patch(
+      Uri.parse('$baseUrl/notifications/$id/read'),
+      headers: headers,
+    );
   }
 
   static Future<void> markAllNotificationsRead() async {
     final headers = await _authHeaders();
-    await http.patch(Uri.parse('$baseUrl/notifications/read-all'), headers: headers);
+    await http.patch(
+      Uri.parse('$baseUrl/notifications/read-all'),
+      headers: headers,
+    );
   }
 
-  static Future<void> submitSupportTicket(String subject, String message) async {
+  static Future<void> submitSupportTicket(
+    String subject,
+    String message,
+  ) async {
     final headers = await _authHeaders();
     final res = await http.post(
       Uri.parse('$baseUrl/support/ticket'),
