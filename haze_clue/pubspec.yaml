@@ -1,4 +1,4 @@
-name: haze_clue
+name: haze clue
 description: "A new Flutter project."
 publish_to: 'none'
 
@@ -27,6 +27,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_native_splash: ^2.4.3
+  flutter_launcher_icons: ^0.13.1
   flutter_lints: ^6.0.0
 
 flutter_native_splash:
@@ -38,6 +39,13 @@ flutter_native_splash:
   android_12:
     color: "#FFFFFF"
     image: assets/images/logo-v2.png
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logo-v2.png"
+  min_sdk_size: 21
+
 
 flutter:
   uses-material-design: true
