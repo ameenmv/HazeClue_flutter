@@ -7,7 +7,7 @@ class ApiService {
   // Defaults to localhost for development
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:5220/api/v1',
+    defaultValue: 'https://hazeclue.runasp.net/api/v1',
   );
 
   // ─── Token helpers ───────────────────────────────────────────
