@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'screens/splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:onnxruntime/onnxruntime.dart';
 
 const Color kPrimaryPurple = Color.fromARGB(255, 101, 67, 194);
 const Color kTextDark = Color(0xFF1A1A2E);
@@ -34,6 +35,10 @@ class ThemeNotifier extends Notifier<ThemeMode> {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize ONNX Runtime
+  await OrtEnv.instance.init();
+
 
   // Load saved theme preference
   final prefs = await SharedPreferences.getInstance();
